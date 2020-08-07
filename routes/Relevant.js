@@ -13,9 +13,11 @@ router.get('/map', (req, res) => {
         if(error){
             res.send(keyword_list);
         }
-        // var test1 = JSON.parse(response.body).items[0];
-        // console.log(test1[0]);
-        res.send(JSON.parse(response.body).items[0])
+        const list = JSON.parse(response.body).items[0];
+        for(let i = 0; i < list.length; i++){
+            keyword_list.push(list[i][0]);
+        }
+        res.send(keyword_list);
     })
     
     
