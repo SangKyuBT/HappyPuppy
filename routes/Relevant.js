@@ -1,41 +1,63 @@
 var express = require('express');
 var router = express.Router();
-var asycArr = new Array();
+const client = require( "cheerio-httpcli" );
+
+
+
+
 
 //연관검색어를 생성
-router.get('/map', (req, res) => {
-    const keyword = req.query.keyword;
-    console.log(keyword)
+router.get('/map/:keyword', (req, res) => {
+    const keyword = req.params.keyword;
     const URL = "https://m.map.naver.com/ac.map/mobilePlaceAddress/ac?q=" + encodeURI(keyword) + "&st=10&r_lt=10";
-    var request = require('request');
     let keyword_list = new Array();
-    request.get(URL, (error, response) => {
-        if(error){
-            res.send(keyword_list);
-        }
-        const list = JSON.parse(response.body).items[0];
-        for(let i = 0; i < list.length; i++){
-            keyword_list.push(list[i][0]);
+
+    const request = require('request');
+    request.get(URL, (error, response, body) => {
+        if(!error){
+            const list = JSON.parse(body).items[0];
+            for(let i of list){
+                keyword_list.push(i[0]);
+            }
         }
         res.send(keyword_list);
     })
-    
-    
-    // const url = "https://map.kakao.com/api/dapi/suggest/place?_caller1=ver_map_141&q=" + encodeURI(keyword);
-    //
-    // request.get(url, (error, response) => {
-    //     if(error){
-    //         res.send(keyword_list);
-    //     }
-    //     const items = JSON.parse(response.body).items;
-    //     if(items.length > 0){
-    //         let j = items.length >= 10 ? 10 : items.length;
-    //         for(let i = 0; i < j; i++){
-    //             keyword_list.push(items[i].split('|')[0]);
-    //         }
-    //     }
-    //     res.send(keyword_list);
-    // })
 });
+
+router.post('/mapImg', (req, res) => {
+    const ids = req.body
+    let urls = ids.map(item => {
+        return "https://place.map.kakao.com/photolist/v/" + item;
+    })
+    var items = {};
+    const request = require('request');
+    urls.forEach((item, idx)=>{
+        request.get(item, (error, response, body) => {
+            if(error){
+                items[ids[idx]] = null;
+                return;
+            }
+            try{
+                items[ids[idx]] = JSON.parse(body).photoViewer.list[0].url;
+            }catch(error){
+                items[ids[idx]] = null;
+            }
+            let bl = true;
+            for(let j of ids){
+                if(items[j] === undefined){
+                    bl = false;
+                    return;
+                }
+            }
+            if(bl){
+                res.json(items);
+            }
+        })
+    })
+    
+    
+});
+
+
 
 module.exports = router;
