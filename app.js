@@ -83,7 +83,9 @@ app.use('/api/naver_login', naverRouter);
 app.use('/api/join', joinRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/relevant', relevantRouter);
-
+app.use('*',function(req, res, next) { 
+  res.sendFile(path.join(__dirname, 'public', 'index.html')); 
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
