@@ -1,10 +1,20 @@
 var express = require('express');
 var router = express.Router();
-// var mysql = require('mysql'); //mysql
 var multer = require('multer'); //파일데이터를 파라미터로 받아줌
 var imgConvert = require('base64-img'); // 받아온 이미지를 문자열 버퍼로 변환
 var sharp = require('sharp'); //이미지 크기 감소시키는 모듈
 var fs = require('fs'); //변환된 버퍼를 확인하거나 파일 삭제 등등...
+const path = require('path');
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'public/images/EventImages/');
+    },
+    filename: function (req, file, cb) {
+      cb(null, new Date().valueOf() + path.extname(file.originalname));
+    }
+  }),
+});
 
 var ftmImg = function(data){
     var data_sharp = data + 'sharp';
@@ -39,13 +49,14 @@ router.post ('/insert', multer({ dest: 'public/images/EventImages/'}).single('po
             }
             fs.unlinkSync(req.file.path);
             res.status(200).send('success');
-            })
+        })
     }
     // res.status(200).send('success');
 })
 
-router.post('/ftm-img',  multer({ dest: 'public/images/EventImages/'}).single('poster_img'), function(req, res, next){
-    console.log(req.file)
+router.post('/ftm-img',  upload.single('poster_img'), function(req, res, next){
+    console.log("!!!!!!!!!")
+    // console.log(req.file)
     // let sharp_fp = req.file.path + 'sharp'
     // sharp(req.file.path).resize({fil:'fill',width:400, height:600}).toFile(sharp_fp, (err, info) => {
     //         if (err) return next(err)
@@ -54,15 +65,29 @@ router.post('/ftm-img',  multer({ dest: 'public/images/EventImages/'}).single('p
     //             fs.unlinkSync(req.file.path)
     //             fs.unlinkSync(sharp_fp)
     //             res.send(imgData.toString())
-    //         })
-        
+    //         })  
     // })
+    
+    // public/images/EventImages/1599986671565.jpg
+
     imgConvert.base64(req.file.path, (err, imgData) => {
         if(err) return next(err)
-        fs.unlinkSync(req.file.path)
-        res.send(imgData.toString())
+        // fs.unlinkSync(req.file.path)
+        res.send(imgData)
     })
+    // 파일 여러개 전송
+    // let arr = new Array();
+    // arr.push(imgConvert.base64Sync('public/images/EventImages/1599869869492.jpg'));
+    // arr.push(imgConvert.base64Sync('public/images/EventImages/1599868331095.jpg'));
+    // res.send(arr);
 })
+
+router.post('/testimg', upload.fields([{name : 'main'}, {name : 'pdf'}]), (req, res) => {
+    console.log(req.files);
+    console.log(req.body);
+    res.send('success');
+})
+
 
 // router.get ('get-evnt', function(req, res, next){
 //     console.log(req.params);

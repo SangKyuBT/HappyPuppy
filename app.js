@@ -8,6 +8,7 @@ var joinRouter = require('./routes/Join');
 var loginSuperVisionRouter = require('./routes/LoginSupervision');
 let loginRouter = require('./routes/Login');
 let relevantRouter = require('./routes/Relevant');
+let imgRouter = require('./routes/ImgApi');
 
 const secretObj = require('./config/jwt');
 
@@ -83,6 +84,7 @@ app.use('/api/naver_login', naverRouter);
 app.use('/api/join', joinRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/relevant', relevantRouter);
+app.use('/api/img', imgRouter);
 app.use('*',function(req, res, next) { 
   res.sendFile(path.join(__dirname, 'public', 'index.html')); 
 });

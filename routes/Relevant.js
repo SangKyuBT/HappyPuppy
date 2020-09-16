@@ -1,9 +1,5 @@
 var express = require('express');
 var router = express.Router();
-const client = require( "cheerio-httpcli" );
-
-
-
 
 
 //연관검색어를 생성

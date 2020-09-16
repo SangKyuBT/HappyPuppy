@@ -1,5 +1,3 @@
-// var express = require('express');
-// let router = express.Router();
 const crypto = require('crypto');
 const aad = Buffer.from('0123456789', 'hex');
 
