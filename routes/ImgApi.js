@@ -22,6 +22,17 @@ const ab_upload = multer({
   })
 });
 
+const ev_upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "hpsangkyu/event",
+    key: function (req, file, cb) {
+      cb(null, new Date().valueOf() + path.extname(file.originalname));
+    },
+    acl: 'public-read-write',
+  })
+});
+
 //전송받은 이미지를 버퍼를 전송
 router.post('/return_buffer', multer({ dest: 'public/images/Reserve/'}).single('img'), (req, res, next)=>{
   const path = req.file.path;

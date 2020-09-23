@@ -1,0 +1,224 @@
+<template> 
+    <v-content id="content" v-resize="onResize" v-if="lg_xl_ok">
+        <v-item-group
+            v-model="window"
+            class="shrink"
+            mandatory
+            tag="v-flex"
+            id="window_wrap"
+            >
+            <div id="item_groups">
+                <v-item 
+                    v-for="n in length"
+                    :key="n"
+                    v-slot:default="{ active, toggle }"
+                    ref="button">
+                    <div>
+                        <v-btn
+                            :input-value="active"
+                            icon
+                            @click="toggle"
+                        >
+                            <v-icon>mdi-record</v-icon>
+                        </v-btn>
+                    </div>
+                </v-item>
+            </div>
+            <!-- 라지일때 -->
+            <v-window
+                v-model="window"
+                class="elevation-1"
+                vertical
+                tile
+                >
+                <v-window-item >
+                    <HomeFirst 
+                        v-bind:windowSize="windowSize" 
+                        v-bind:windowLgSize="windowLgSize"
+                        v-bind:lg_xl_ok="lg_xl_ok"
+                        v-bind:button_size="buttonSize"
+                        @child="windowPageMove"
+                    ></HomeFirst>
+                </v-window-item>
+                <v-window-item>
+                    <v-card>
+                    <EventCard 
+                        v-bind:windowSize="windowSize"
+                        v-bind:windowLgSize="windowLgSize"
+                        v-bind:lg_xl_ok="lg_xl_ok"
+                    ></EventCard>
+                    </v-card>
+                </v-window-item>
+                <v-window-item>
+                    <EducationCard 
+                    v-bind:windowSize="windowSize"
+                    v-bind:windowLgSize="windowLgSize"
+                    v-bind:lg_xl_ok="lg_xl_ok"
+                    v-bind:button_size="buttonSize">
+                    </EducationCard>
+                </v-window-item>
+                <v-window-item>
+                    <Abandoned 
+                    v-bind:windowSize="windowSize"
+                    v-bind:windowLgSize="windowLgSize"
+                    v-bind:lg_xl_ok="lg_xl_ok"
+                    ></Abandoned>
+                </v-window-item>
+            </v-window>
+
+        </v-item-group>
+    </v-content>
+    <v-content id="content" v-resize="onResize" v-else>
+        <HomeFirst 
+            v-bind:windowSize="windowSize" 
+            v-bind:xs_ok="xs_ok"
+            v-bind:sm_md_ok="sm_md_ok"
+            v-bind:button_size="buttonSize"
+            @child="windowPageMove"
+        ></HomeFirst>
+        <EventCard 
+            v-bind:windowSize="windowSize"
+            v-bind:windowLgSize="windowLgSize"
+            v-bind:lg_xl_ok="lg_xl_ok"
+        ></EventCard>
+        <EducationCard 
+            v-bind:windowSize="windowSize"
+            v-bind:windowLgSize="windowLgSize"
+            v-bind:lg_xl_ok="lg_xl_ok"
+            v-bind:button_size="buttonSize">
+        </EducationCard>
+        <Abandoned v-bind:windowSize="windowSize"></Abandoned>
+    </v-content>
+
+</template>
+<script>
+
+</script>
+<script>
+import HomeFirst from "../components/home/HomeFirst";
+import EventCard from "../components/home/Event";
+import EducationCard from "../components/home/Education";
+import Abandoned from "../components/home/Abandoned";
+
+export default {
+    props:['wep'],
+    data: () => ({
+        button_size : {
+            xs : "100",
+            sm : "120",
+            md : "150",
+            lg : "170",
+            xl : "200",
+        },
+        windowSize: {
+            x: 0,
+            y: 0,
+        },
+        windowLgSize: 0,
+        window : 0,
+        length : 4,
+        test1 : { "width" : "100px",
+        'left' : "100px"},
+        active_number : 0,
+        offsetTop : 0,
+    }),
+    methods:{
+        onResize(){
+            this.windowSize = { x: window.innerWidth, y: window.innerHeight * 0.6} 
+            this.windowLgSize = window.innerHeight - 184;
+        },
+        windowPageMove(data){ //lg, xl 사이즈 일때 홈의 맨위에 있는 버튼들을 누르면 해당 윈도우로 이동
+            this.$refs["button"][data]._events.change[0]();
+            this.active_number = data;
+        },
+        test(){
+            console.log(this.$refs["button"][0].groupClasses["v-item--active"])
+            console.log(this.$refs["button"][1].groupClasses["v-item--active"])
+        },
+        scrollEvent(){
+            window.addEventListener('scroll', () => {
+                console.log(window.scrollY);
+            })
+        },
+        test111(){
+            return this.$vuetify.breakpoint.name;
+        },
+        // onScroll (e) {
+        //     this.offsetTop = e.target.scrollTop
+        //     console.log(this.offsetTop)
+        //     alert("됨??")
+        // },
+        
+    },
+    created() {
+
+    },
+    mounted(){
+        console.log("마운트!!")
+        this.onResize();
+        this.scrollEvent();
+
+    },
+    computed:{
+        buttonSize(){
+            const key = this.$vuetify.breakpoint.name;
+            return this.button_size[key];
+        },
+        xs_ok(){
+            return this.$vuetify.breakpoint.xs ? 'ok' : '' ;
+        },
+        sm_md_ok(){
+            return this.$vuetify.breakpoint.sm || this.$vuetify.breakpoint.md ? 'ok' : '';
+        },
+        lg_xl_ok(){
+            return this.$vuetify.breakpoint.lg || this.$vuetify.breakpoint.xl ? 'ok' : '';
+        },
+        // windowLgSize(){
+        //     return window.innerHeight - 164;
+        // }
+    },
+    components :{
+        HomeFirst,
+        EventCard,
+        EducationCard,
+        Abandoned,
+    },
+    
+}
+</script>
+
+<style >
+#home_card div{
+    margin: 2%;
+}
+#home_card button{
+    border: 0;
+}
+#event_title h1{
+    font-size : 3em
+}
+#event_title p{
+    font-size : 2em
+}
+.v-card--reveal {
+  align-items: center;
+  bottom: 0;
+  justify-content: center;
+  position: absolute;
+  width: 100%;
+}
+.poster_op{
+    width:100%;
+    height: 100%;
+    position: absolute;
+    opacity: 0.7;
+    background-color: black;
+}
+#item_groups{
+    position : absolute;
+    left:97%;
+    top:43%;
+    z-index: 2;
+}
+
+</style>

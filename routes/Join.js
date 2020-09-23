@@ -2,14 +2,7 @@ let express = require('express');
 let router = express.Router();
 const nodemailer = require('nodemailer');
 const createSecret = require('../modules/CreateSecret');
-
-const nodemailer_pass = {
-    key: 'a562805863VajRwZ',
-    en: '7d4d7730a21c1751bbe8ab',
-    tag: '82c3a2eb7bbfd541bfb3c410a4082755',
-    nonce: '00a8edb4d68cf9c2a6cb8c19'
-}
-
+const nodemailer_pass = require('../config/nodemailerPass');
 const vq_pass = createSecret.ventriloquism(nodemailer_pass);
 
 router.post ('/certify-number', function(req, res){
