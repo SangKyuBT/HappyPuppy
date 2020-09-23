@@ -1,9 +1,9 @@
 let express = require('express');
 let router = express.Router();
 
+
 //세로 고침시에 헤더의 상태를 유지합니다.
 router.get('/', function(req, res) {
-    console.log(req.session);
     res.status(200).send({
         msg: "success",
         login_code: req.session.isLogined

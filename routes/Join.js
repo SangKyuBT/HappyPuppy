@@ -1,7 +1,7 @@
-var express = require('express');
-var router = express.Router();
-let nodemailer = require('nodemailer');
-let createSecret = require('../routes/CreateSecret');
+let express = require('express');
+let router = express.Router();
+const nodemailer = require('nodemailer');
+const createSecret = require('../modules/CreateSecret');
 
 const nodemailer_pass = {
     key: 'a562805863VajRwZ',

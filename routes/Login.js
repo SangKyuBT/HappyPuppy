@@ -1,9 +1,7 @@
 let express = require('express');
 let router = express.Router();
-let createSecret = require('../routes/CreateSecret');
-
-let jwt = require('jsonwebtoken');
-let secretObj = require('../config/jwt');
+const createSecret = require('../modules/CreateSecret');
+const createToken = require('../modules/CreateToken');
 
 router.post('/', function(req, res){
     // console.log(req.body);
@@ -22,7 +20,8 @@ router.post('/', function(req, res){
             if(createSecret.ventriloquism(vp) === user_info.password) {
                 console.log("login!!")
 
-                let token = jwt.sign({'email' : user_info.email}, secretObj.secret, { expiresIn : '5m'})
+                // let token = jwt.sign({'email' : user_info.email}, secretObj.secret, { expiresIn : '5m'})
+                const token = createToken.signToken(user_info.email);
                 
                 // 사용자 확인하는 방법 결과 값 : { email: 'wjdruf23@naver.com', iat: 1590230494, exp: 1590230794 }
                 // let de = jwt.verify(token, secretObj.secret);
