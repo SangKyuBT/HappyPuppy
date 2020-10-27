@@ -15,7 +15,6 @@ router.get('/', (req, res) => {
 
 //받은 지역의 이름으로 일치하는 리스트를 전송
 router.get('/place_search/:place', (req, res) => {
-    console.log(req.params.place);
     if(!req.params.place){
         res.status(500).send({
             message : 0

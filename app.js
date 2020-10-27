@@ -10,7 +10,6 @@ let loginRouter = require('./routes/Login');
 let relevantRouter = require('./routes/Relevant');
 let imgRouter = require('./routes/ImgApi');
 let AbandonedRouter = require('./routes/Abandoned');
-let testRouter = require('./routes/s3');
 
 const secretObj = require('./config/jwt');
 
@@ -88,11 +87,10 @@ app.use('/api/login', loginRouter);
 app.use('/api/relevant', relevantRouter);
 app.use('/api/img', imgRouter);
 app.use('/api/abandoned', AbandonedRouter);
-app.use('/api/s3Test', testRouter);
 app.use('*',function(req, res, next) { 
   res.sendFile(path.join(__dirname, 'public', 'index.html')); 
 });
-//asdasdasdasdasdasdasdasd
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
