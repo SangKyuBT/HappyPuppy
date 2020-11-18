@@ -8,8 +8,8 @@ const vq_pass = createSecret.ventriloquism(nodemailer_pass);
 router.post ('/certify-number', function(req, res){
     const email = req.body.email;
     const join_wait = {
-        "certify_number" : createSecret.createCertifyNumber(5, 5),
-        "wait_email" : email,       
+        certify_number : createSecret.createCertifyNumber(5, 5),
+        wait_email : email,       
     }  
     //메일 전송객체 생성
     let transporter = nodemailer.createTransport({
@@ -49,7 +49,6 @@ router.post ('/certify-number', function(req, res){
                     })             
                 }else{
                     //메일 전송이 됐다면 0을 전송
-                    console.log(info.responce);
                     res.status(200).send({
                             'message' : 0
                     })
@@ -61,16 +60,16 @@ router.post ('/certify-number', function(req, res){
 
 //폼의 이메일 부분의 blur 발생시 이메일 중복 체크 라우터
 //쿼리의 result의 크기를 send
-router.get('/duplicate_email', function(req, res){
-    const email = req.query.email;
-    connection.query("select email from member where email = ?", email, function(err, result){
+router.get('/duplicate_email/:email', function(req, res){
+    const email = req.params.email;
+    connection.query("select email from member where email = ?", [email], function(err, result){
         if(err){
             console.log(err);
-            throw err;
+            res.status(200).json({code:0, message:'failed'});
+            return;
         }
-        res.status(200).send({
-            'code' : result.length
-        });
+        console.log(result);
+        res.status(200).json({code:1, message:'success', result:result.length});
     })
 })
 
@@ -96,10 +95,15 @@ router.post('/input_member', function(req,res){
                             console.log(err);
                             throw err
                         }else{
-                            console.log('success')
-                            res.status(200).send({
-                                'message' : 'success'
-                            })
+                            connection.query('insert into member_profile (email) values(?)', member_info.email, function(err, result){
+                                if(err){
+                                    console.log(err);
+                                    throw err
+                                }
+                                res.status(200).send({
+                                    'message' : 'success'
+                                })
+                            } )
                         }
                     })
                 }

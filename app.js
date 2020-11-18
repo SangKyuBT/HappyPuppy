@@ -10,6 +10,10 @@ let loginRouter = require('./routes/Login');
 let relevantRouter = require('./routes/Relevant');
 let imgRouter = require('./routes/ImgApi');
 let AbandonedRouter = require('./routes/Abandoned');
+const mediaRouter = require('./routes/Media');
+const memberRouter = require('./routes/Member');
+const intercaptor = require('./modules/Intercaptor');
+const haur = 5400000;
 
 const secretObj = require('./config/jwt');
 
@@ -30,18 +34,18 @@ let connection = mysql.createConnection({
 const sessionOption = {
       clearExpired: true, //만료된 세션을 지울 것인가
       checkExpirationInterval: 60000, //얼마나 자주 만료 된 세션이 지워질 것인가(단위: 밀리 초)
-      expiration: 3600000, //모든 세션의 유효한 세션 기간 
+      expiration: haur, //모든 세션의 유효한 세션 기간 
       createDatabaseTable: true, //세션 데이터베이스 테이블이 존재하지 않는 경우 생성할지 여부
-      connectionLimit: 1, //연결 출을 만들 때 연결 수
+      connectionLimit: 1, //연결 풀을 만들 때 연결 수
       endConnectionOnClose: false, // 저장소가 닫힐 때 데이터베이스 연결을 종료할지 여부
       charset: 'utf8mb4_bin', //문자 셋
       schema: {
-          tableName: 'sessions',
-          columnNames: {
-              session_id: 'session_id',
-              expires: 'expires', 
-              data: 'data'
-          }
+        tableName: 'sessions',
+        columnNames: {
+            session_id: 'session_id',
+            expires: 'expires', 
+            data: 'data'
+        }
       }
 }
 var sessionStore = new mySQLStore(sessionOption, connection); 
@@ -58,6 +62,7 @@ connection.connect(function (err) {
 
 global.connection = connection; //connection 전역 선언
 global.sessionStore = sessionStore // 세션 저장소 전역 선언
+global.haur = haur;
 
 var app = express();
 
@@ -70,14 +75,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.set('trust proxy', 1) // 첫번째 프록시를 신뢰
+app.set('trust proxy', 1) // 첫번째 프록시를 신뢰
 app.use(session({
   key: 'session_cookie_name',
   secret : secretObj.secret,
   store: sessionStore,
-  resave: false, // 클라이언트가 접속할 때마다 SID를 새로 발급할 것인가
-  saveUninitialized: false, //세션을 사용하기 전까지는 SID를 발급하지 않도록 하는 옵션, ture면 발급하지 않음
+  resave: false, //조건부 세션 유지
+  saveUninitialized: false, //세션을 사용하기 전까지는 SessionID를 발급하지 않도록 하는 옵션, ture면 발급하지 않음
 }));
+
+app.use(intercaptor);
 
 app.use('/api/login_spv', loginSuperVisionRouter);
 app.use('/api/event', eventRouter);
@@ -87,6 +94,8 @@ app.use('/api/login', loginRouter);
 app.use('/api/relevant', relevantRouter);
 app.use('/api/img', imgRouter);
 app.use('/api/abandoned', AbandonedRouter);
+app.use('/api/media', mediaRouter);
+app.use('/api/member', memberRouter);
 app.use('*',function(req, res, next) { 
   res.sendFile(path.join(__dirname, 'public', 'index.html')); 
 });

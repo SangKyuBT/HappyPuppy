@@ -1,43 +1,47 @@
 let express = require('express');
 let router = express.Router();
+const {loginOut} = require('../service/Login');
 
 
-//세로 고침시에 헤더의 상태를 유지합니다.
+//세로 고침시에 헤더 상태 유지.
 router.get('/', function(req, res) {
-    res.status(200).send({
-        msg: "success",
-        login_code: req.session.isLogined
-    });
+    // res.status(200).json({
+    //     msg: "success",
+    //     login_code: req.session.isLogined
+    // });
+    res.status(200).json({code:1, message:'success', login_code:req.session.isLogined});
+    // if(!!req.session.tokens){
+    // }else{
+    //     res.status(200).json({code:0, message:'not login'});
+    // }
 });
 
-//로그아웃시에 세션, DB삭제
 router.get('/logout', function(req, res){
-    
-    //db에서 해당 세션을 삭제
-    connection.query('delete from sessions where session_id=?', req.sessionID, function(err, result){
+    loginOut(req.sessionID, (err) => {
         if(err){
             console.log(err);
-            throw err;
+            res.status(200).send('failed');
+            return
         }
-        
-        //세션 재발급
-        // req.session.regenerate(function(err) {
-        //     if(err){
-        //         console.log("재발급에서 에러 발생");
-        //         console.log(err);
-        //     }
-        //     res.status(200).send("success");
-        // })
-        req.session.reload(function(){
-            if(err){
-                console.log("재발급에서 에러 발생");
-                console.log(err);
-            }
-            res.status(200).send("success");
-        })
+        res.status(200).send("success");
     })
 })
 
+//세션 재발급
+// req.session.regenerate(function(err) {
+//     if(err){
+//         console.log("재발급에서 에러 발생");
+//         console.log(err);
+//     }
+//     res.status(200).send("success");
+// })
+// req.session.reload(function(error){
+//     if(error){
+//         console.log("재발급에서 에러 발생");
+//         console.log(err);
+//     }
+//     res.status(200).send("success");
+// })
 
 
 module.exports = router;
