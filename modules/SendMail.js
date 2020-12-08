@@ -5,8 +5,8 @@
 */
 const nodemailer = require('nodemailer');
 const {ventriloquism} = require('./CreateSecret');
-const tran_option = require('./config/vq.json');
-const nodemailer_pass = require('./config/nodemailerPass');
+const tran_option = require('./configs/vq.json');
+const nodemailer_pass = require('./configs/nodemailerPass');
 
 const vq_pass = ventriloquism(nodemailer_pass);
 tran_option.auth.pass = vq_pass;

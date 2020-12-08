@@ -1,7 +1,7 @@
 const session = require('express-session');
 const mySQLStore = require('express-mysql-session')(session);
 const {pool} = require('../DAM');
-const haur = require('./config/sessionHauer.json');
+const haur = require('./configs/sessionHauer.json');
 
 const sessionOption = {
   clearExpired: true, 

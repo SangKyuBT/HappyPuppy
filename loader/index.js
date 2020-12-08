@@ -9,7 +9,7 @@ const mediaRouter = require('../routes/Media');
 const memberRouter = require('../routes/Member');
 const interceptor = require('../interceptor');
 const {sessionStore, session} = require('../modules/SessionStore');
-const secretObj = require('../modules/config/jwt');
+const secretObj = require('../modules/configs/jwt');
 
 const loader = (app) => {
     app.set('trust proxy', 1) 
@@ -18,6 +18,7 @@ const loader = (app) => {
         secret : secretObj.secret,
         store: sessionStore,
         resave: false,
+        // resave: true,
         saveUninitialized: false,
     }));
 

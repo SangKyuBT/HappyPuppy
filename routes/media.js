@@ -1,12 +1,12 @@
 let express = require('express');
 let router = express.Router();
-const {videoUpload, mediaUpload} = require('../modules/Multer');
+const {mediaUpload} = require('../modules/Multer');
 const {service} = require('../service/Media');
-const createdToken = require('../modules/CreateToken');
+const getEmail = require('../modules/getEmail');
 
 //구독
 router.get('/scripting/:email', (req, res) => {
-    const my_email = createdToken.verifyToken(req.session.tokens).email;
+    const my_email = getEmail(req.session);
     if(req.params.email === my_email){
         res.status(200).json({code:0, message:'failed'});
         return
@@ -20,7 +20,7 @@ router.get('/scripting/:email', (req, res) => {
     })
 })
 router.get('/unscripting/:email', (req, res) => {
-    const my_email = createdToken.verifyToken(req.session.tokens).email;
+    const my_email = getEmail(req.session);
     if(req.params.email === my_email){
         res.status(200).json({code:0, message:'failed'});
         return
@@ -41,7 +41,7 @@ router.post('/upload_media', (req, res) => {
             res.status(200).json({code:0, message:'failed'}); 
             return
         }
-        const email = createdToken.verifyToken(req.session.tokens).email;
+        const email = getEmail(req.session);
         service.mediaUpload(req.body.form, req.files, email, (err) => {
             if(err){
                 console.log(err);
@@ -59,7 +59,7 @@ router.post('/update_media', (req, res) => {
             res.status(200).json({code:0, message:'failed'}); 
             return
         }
-        const email = createdToken.verifyToken(req.session.tokens).email;
+        const email = getEmail(req.session);
         service.mediaUpdate(req.body.form, req.files, req.body.num, email, (err) => {
             res.status(200).json({code:!err ? 1 : 0});
         })
@@ -67,16 +67,8 @@ router.post('/update_media', (req, res) => {
 })
 //채널 정보
 router.get('/get_channel/:email', (req, res) => {
-    let my_channel = false;
-    var session_email = null;
-    if(!!req.session.tokens){
-        try{
-            session_email = createdToken.verifyToken(req.session.tokens).email;
-            my_channel = req.params.email === session_email ? true : false;
-        }catch{
-            console.log('session token is done')
-        }
-    }
+    const session_email = getEamil(req.session);
+    const my_channel = req.params.email === session_email
     service.getChannel(req.params.email, session_email, (err, check, result) => {
         if(err){
             console.log(err);
@@ -118,15 +110,8 @@ router.get('/m_count/:num/:email', (req, res) => {
         res.status(200).json({code:0, message:'media num is null'});
         return
     }
-    let my_channel = false; session_email = null;
-    if(!!req.session.tokens){
-        try{
-            session_email = createdToken.verifyToken(req.session.tokens).email;
-            my_channel = req.params.email === session_email ? true : false;
-        }catch{
-            console.log('session token is done')
-        }
-    }
+    const session_email = getEmail(req.session);
+    const my_channel = req.params.email === session_email;
     service.getMCCount(num, req.params.email, session_email, (err, comments, my_info) => {
         if(err){
             console.log(err);
@@ -150,8 +135,7 @@ router.get('/get_comments/:num', (req, res) => {
 })
 //댓글 insert
 router.post('/input_comment',(req, res) => {
-    console.log(req.body);
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.insertComment(req.body, email, (err) => {
         if(err){
             console.log(err);
@@ -163,7 +147,7 @@ router.post('/input_comment',(req, res) => {
 })
 //영상에 좋아요 or 싫어요
 router.get('/my_media_think/:num/:think',(req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.setThink(true, email, req.params, (err, code) =>{
         if(err){
             console.log(err);
@@ -175,7 +159,7 @@ router.get('/my_media_think/:num/:think',(req, res) => {
 })
 //댓글에 좋아요 or 싫어요
 router.get('/my_comment_think/:num/:think',(req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.setThink(false, email, req.params, (err, code) =>{
         if(err){
             console.log(err);
@@ -187,12 +171,7 @@ router.get('/my_comment_think/:num/:think',(req, res) => {
 })
 //조회 수 증가
 router.post('/media_counting', (req, res) => {
-    let email;
-    try{
-        email = createdToken.verifyToken(req.session.tokens).email;
-    }catch{
-        email = null;
-    }
+    const email = getEmail(req.session);
     const ip = req.headers['x-forwarded-for'] ||
         req.connection.remoteAddress ||
         req.socket.remoteAddress ||
@@ -208,12 +187,7 @@ router.post('/media_counting', (req, res) => {
 
 })
 router.get('/my_script', (req, res) => {
-    let email;
-    try{
-        email = createdToken.verifyToken(req.session.tokens).email;
-    }catch{
-        email = null;
-    }
+    const email = getEmail(req.session);
     service.getMyscript(email, (err, result) => {
         res.status(200).json({code:!err ? 1 : 0, result: result});
     })
@@ -258,8 +232,7 @@ router.post('/get_script_medias', (req, res) => {
 })
 //좋아요를 표시한 영상 요청
 router.get('/get_good_mymedias', (req, res) => {
-    console.log('inin')
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getMyGoodMedias(email, (err, result) => {
         if(err){
             console.log(err);
@@ -289,14 +262,14 @@ router.get('/search_keyword/:keyword', (req, res) => {
 
 //미디어 삭제
 router.post('/drop_media', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.deleteMeida(req.body.num, email, (err) => {
         res.status(200).json({code: !err ? 1 : 0});
     })
 })
 
 router.post('/drop_comments', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.deleteComments(req.body.num, email, (err) => {
         res.status(200).json({code: !err ? 1 : 0});
     })

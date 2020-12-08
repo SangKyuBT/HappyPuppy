@@ -3,7 +3,8 @@ const createError = require('http-errors');
 const path = require('path');
 const logger = require('morgan');
 const loader = require('./loader');
-
+const b_url = "//localhost:3000"
+global.b_url = b_url;
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-//세션, 라우터 적용
+//세션, 인터셉터, 라우트 주입
 loader(app);
 
 app.use('*',function(req, res, next) { 

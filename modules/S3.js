@@ -1,7 +1,7 @@
 const aws = require("aws-sdk");
 aws.config.loadFromPath(__dirname + "/../config/awsconfig.json");
 const s3 = new aws.S3();
-const bucket = require("./config/bucket.json");
+const bucket = require("./configs/bucket.json");
 
 //s3기본 동작
 const practice = {

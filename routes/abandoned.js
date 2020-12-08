@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 const service = require('../service/Abandoned');
 const {abUpload} = require('../modules/Multer'); //s3 업로드 multer
-const createdToken = require('../modules/CreateToken');
+const getEmail = require('../modules/getEmail');
 
 //실종 반려견 리스트를 전송
 router.get('/', (req, res) => {
@@ -57,7 +57,7 @@ router.post('/insert_poster', (req, res) => {
             res.status(200).json({code : 0});
             return;
         }
-        const email = createdToken.verifyToken(req.session.tokens).email;
+        const email = getEmail(req.session);
         service.insert(req.body.form, req.files, email, (err) => {
             if(err){
                 res.status(200).json({code : 0});
@@ -83,7 +83,7 @@ router.post('/update_poster', (req, res) => {
     })
 })
 router.post('/delete_poster', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.delete(req.body, email, (err) => {
         if(err){
             console.log(err);

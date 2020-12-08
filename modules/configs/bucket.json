@@ -1,0 +1,7 @@
+{
+    "base" : "hpsangkyu",
+    "ab_bucket" : "hpsangkyu/abandoned",
+    "media_bucket" : "hpsangkyu/media",
+    "video_bucket" : "hpsangkyu/media/video",
+    "thumbnail_bucket" : "hpsangkyu/media/image"
+}

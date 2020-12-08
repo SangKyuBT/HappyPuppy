@@ -1,9 +1,8 @@
 let express = require('express');
 let router = express.Router();
-const createdToken = require('../modules/CreateToken');
 const {service} = require('../service/Event');
 const {rsUpload} = require('../modules/Multer');
-
+const getEmail = require('../modules/getEmail');
 
 router.post('/sharp_img', (req, res) => {
     rsUpload(req, res, (err) =>{
@@ -13,7 +12,7 @@ router.post('/sharp_img', (req, res) => {
             return;
         }
         const file = req.file, body = req.body,
-        email = createdToken.verifyToken(req.session.tokens).email;
+        email = getEmail(req.session);
         service.insert(file, body, email, (err) => {
             if(err){
                 console.error(err);
@@ -33,7 +32,7 @@ router.post('/update', (req, res) => {
             return;
         }
         const {file, body} = req,
-        email = createdToken.verifyToken(req.session.tokens).email;
+        email = getEmail(req.session);
         service.update(file, body, email, (err) => {
             if(err){
                 console.error(err);
@@ -71,8 +70,7 @@ router.get('/get_asc/:start',(req, res) => {
 })
 
 router.post('/delete_event', (req, res) => {
-    const token_info = createdToken.verifyToken(req.session.tokens),
-    email = token_info.email;
+    email = getEmail(req.session);
     service.delete(req.body.num, email, (err, result) => {
         if(err){
             console.log(err);

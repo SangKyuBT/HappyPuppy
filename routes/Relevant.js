@@ -24,6 +24,4 @@ router.post('/mapImg', (req, res) => {
     
 });
 
-
-
 module.exports = router;

@@ -1,8 +1,8 @@
 let express = require('express');
 let router = express.Router();
-const createdToken = require('../modules/CreateToken');
 const {service} = require('../service/Member');
 const {rsUpload} = require('../modules/Multer');
+const getEmail = require('../modules/getEmail');
 
 //member profile image 요청
 router.post('/profile', (req, res) => {
@@ -12,7 +12,8 @@ router.post('/profile', (req, res) => {
             res.status(200).json({code:0, message:'failed'});
             return
         }
-        email = createdToken.verifyToken(req.session.tokens).email;
+        
+        email = getEmail(req.session);
         service.updateImage(req.file, req.body, email, (err, filename) => {
             if(err){
                 console.log(err);
@@ -26,7 +27,7 @@ router.post('/profile', (req, res) => {
 
 //member에 대한 대략적인 정보 요청
 router.get('/get_info', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getInfo(email, (err, result) => {
         if(err){
             console.log(err);
@@ -38,7 +39,7 @@ router.get('/get_info', (req, res) => {
 });
 //channel에 대한 대략적인 정보 요청
 router.get('/get_channel_info', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getMediaInfo(email, (err, result) => {
         if(err){
             console.log(err);
@@ -52,7 +53,7 @@ router.get('/get_channel_info', (req, res) => {
 router.get('/nickname/:nickname', (req, res) => {
     const nickname = req.params.nickname;
     if(!!nickname && nickname.length <= 15){
-        const email = createdToken.verifyToken(req.session.tokens).email;
+        const email = getEmail(req.session);
         service.updateNickname(nickname, email, (err) => {
             if(err){
                 console.log(err);
@@ -69,7 +70,7 @@ router.get('/nickname/:nickname', (req, res) => {
 
 //해당 member의 행사 요청
 router.get('/get_events', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getMyEvent(email, (err, result) => {
         if(err){
             console.log(err);
@@ -82,7 +83,7 @@ router.get('/get_events', (req, res) => {
 
 //해당 member의 실종 반려견 요청
 router.get('/get_abandoned', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getMyAbandoned(email, (err, result) => {
         if(err){
             console.log(err);
@@ -94,6 +95,11 @@ router.get('/get_abandoned', (req, res) => {
 
 //비밀번호 변경 인증번호 요청
 router.post('/certify_number', (req, res) => {
+    const number = req.session.isLogined;
+    if(!!number && number === 2){
+        res.status(200).json({code:0});
+        return
+    }
     service.sendMail(req.body.email, (err, result) => {
         res.status(200).json({code: err ? 0 : 1, result:result});
     })
@@ -101,6 +107,11 @@ router.post('/certify_number', (req, res) => {
 
 //비밀번호 변경 요청
 router.post('/find_pass', (req, res) => {
+    const number = req.session.isLogined;
+    if(!!number && number === 2){
+        res.status(200).json({code:0});
+        return
+    }
     service.findPass(req.body, (err, result) => {
         res.status(200).json({code: err ? 0 : 1, result:result});
     })
@@ -108,7 +119,7 @@ router.post('/find_pass', (req, res) => {
 
 //회원 미디어관리 정보 요청
 router.get('/my_medias', (req, res) => {
-    const email = createdToken.verifyToken(req.session.tokens).email;
+    const email = getEmail(req.session);
     service.getMyMedias(email, (err, result) => {
         res.status(200).json({code: err ? 0 : 1, result : result});
     })
