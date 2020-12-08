@@ -12,8 +12,7 @@ router.get('/', (req, res) => {
             res.status(200).send({message: 0});
             return
         }
-        const rs = result.length > 0 ? {message: 1, result : result} : {message: 0, result : result} 
-        res.status(200).json(rs)
+        res.status(200).json({message: result.length > 0 ? 1 : 0, result : result})
     })
 
 })
@@ -53,60 +52,45 @@ router.get('/target/:num', (req, res) => {
 })
 //반려견 포스터 insert
 router.post('/insert_poster', (req, res) => {
-    if(!!req.session.tokens){
-        abUpload(req, res, (err) => {
+    abUpload(req, res, (err) => {
+        if(err){
+            res.status(200).json({code : 0});
+            return;
+        }
+        const email = createdToken.verifyToken(req.session.tokens).email;
+        service.insert(req.body.form, req.files, email, (err) => {
             if(err){
-                res.status(200).send({message : 0});
+                res.status(200).json({code : 0});
                 return;
             }
-            const email = createdToken.verifyToken(req.session.tokens).email;
-            service.insert(req.body.form, req.files, email, (err) => {
-                if(err){
-                    res.status(200).send({message : 0});
-                    return;
-                }
-                res.status(200).send({message : 1});
-            })
+            res.status(200).json({code : 1});
         })
-    }else{
-        console.log('not login')
-        res.status(200).send({message : 0});
-    }
+    })
 })
 router.post('/update_poster', (req, res) => {
-    if(!!req.session.tokens){
-        abUpload(req, res, (err) => {
+    abUpload(req, res, (err) => {
+        if(err){
+            res.status(200).json({code : 0});
+            return;
+        }
+        service.update(req.body.form, req.files, (err) => {
             if(err){
-                res.status(200).send({message : 0});
+                res.status(200).json({code : 0});
                 return;
             }
-            service.update(req.body.form, req.files, (err) => {
-                if(err){
-                    res.status(200).send({message : 0});
-                    return;
-                }
-                res.status(200).send({message:1});
-            })
+            res.status(200).json({code:1});
         })
-    }else{ 
-        console.log('not login')
-        res.status(200).send({message : 0});
-    }
+    })
 })
 router.post('/delete_poster', (req, res) => {
-    if(!!req.session.tokens){
-        const email = createdToken.verifyToken(req.session.tokens).email;
-        service.delete(req.body, email, (err) => {
-            if(err){
-                console.log(err);
-                res.status(200).send({message : 0});
-                return;
-            }
-            res.status(200).send({message : 1});
-        })
-    }else{
-        console.log('not login')
-        res.status(200).send({message : 0});
-    }
+    const email = createdToken.verifyToken(req.session.tokens).email;
+    service.delete(req.body, email, (err) => {
+        if(err){
+            console.log(err);
+            res.status(200).json({code : 0});
+            return;
+        }
+        res.status(200).json({code : 1});
+    })
 })
 module.exports = router;

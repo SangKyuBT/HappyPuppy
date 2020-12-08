@@ -1,33 +1,40 @@
+/* 
+  암호화 및 복호화 모듈
+  사용 모듈 : cryto
+  랜덤 암호화 문자열 생성, 문자열 암호화 및 복호화
+ */
 const crypto = require('crypto');
 const aad = Buffer.from('0123456789', 'hex');
 
-//랜덤 비밀키 생성 메소드
+/*
+  랜덤키 생성
+  파라미터: x = hex 갯수, y = base64 갯수
+  리턴 : 암호화 문자열
+*/
 const createCertifyNumber = (x, y) => {
-    var hex_key = crypto.randomBytes(256).toString('hex').substr(100, x); //hax로 인코딩 후 x자
-    var base64_key = crypto.randomBytes(256).toString('base64').substr(50, y); //base64로 인코딩 후 y자
+    var hex_key = crypto.randomBytes(256).toString('hex').substr(100, x); 
+    var base64_key = crypto.randomBytes(256).toString('base64').substr(50, y); 
     return hex_key + base64_key;
 }
 
-//패스워드 암호화 메소드
+/*
+  문자열 암호화
+  랜덤키, 유추 방지 암호, 문자열 암호화, 변조 방지 암호 생성
+  파라미터 : pas = 암호화할 문자열
+  리턴 : 암호화 객체
+*/
 const encryption = (pas) => {
     const key = createCertifyNumber(8,8);
-    // number used once 매번 바꿔 사용하는 번호 
     const nonce = crypto.randomBytes(12);
-    // aes 128 ccm 암호화 객체 생성 TAG는 16바이트
     const cipher = crypto.createCipheriv('aes-128-ccm', key, nonce,  {
       authTagLength: 16
     });
-    // 평문 데이터
     const plaintext = pas;
-    // aad 추가
     cipher.setAAD(aad, {
       plaintextLength: Buffer.byteLength(plaintext)
     });
-    // 평문 암호화
     const ciphertext = cipher.update(plaintext, 'utf8');
-    // 암호화 완료 - 이 이후로는 더이상 이 암호화 객체를 사용할 수 없음
     cipher.final();
-    // 최종 암호화 TAG(MAC) 값 얻기
     const tag = cipher.getAuthTag();
     var item  = {
         key : key,
@@ -38,7 +45,11 @@ const encryption = (pas) => {
     return item;
 }
 
-//복호화 메소드
+/*
+  암호화 객체 디코딩
+  파라미터 : pas = 암호화할 문자열
+  리턴 : 디코딩된 평문 문자열
+*/
 const ventriloquism = (item) => {
     const cp_nonce = Buffer.from(item.nonce, 'hex');
     const cp_text = Buffer.from(item.en,'hex');
@@ -50,15 +61,17 @@ const ventriloquism = (item) => {
     dcp.setAAD(aad, {
         plaintextLength: cp_text.length
     });
-    const tryVentriloquism = dcp.update(cp_text, null, 'utf8');
+    const ventriloquism = dcp.update(cp_text, null, 'utf8');
     try {
         dcp.final();
+        return ventriloquism;
       } catch (err) {
-        console.error('Authentication failed!');
-        throw err;
+        console.error('decomposition failure');
+        setTimeout(() => {
+          ventriloquism(item);
+        }, 200);
       }
 
-    return tryVentriloquism;
 }
 
 module.exports.createCertifyNumber = createCertifyNumber;

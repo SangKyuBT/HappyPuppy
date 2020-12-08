@@ -1,7 +1,7 @@
 const aws = require("aws-sdk");
 aws.config.loadFromPath(__dirname + "/../config/awsconfig.json");
 const s3 = new aws.S3();
-const bucket = require("../config/bucket.json");
+const bucket = require("./config/bucket.json");
 
 //s3기본 동작
 const practice = {
@@ -30,6 +30,18 @@ const practice = {
             Key : key
         }
         s3.deleteObject(params, (err) => {
+            callback(err);
+        })
+    },
+    deletes :(keys, callback) => {
+        var params = {
+            Bucket: bucket.base, 
+            Delete: {
+             Objects: keys, 
+             Quiet: false
+            }
+        };
+        s3.deleteObjects(params, (err) => {
             callback(err);
         })
     },

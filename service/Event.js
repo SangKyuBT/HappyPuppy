@@ -1,7 +1,7 @@
 const sharp = require('sharp'); 
 const {practice} = require('../modules/S3'); 
 const fs = require('fs'); 
-const DAO = require('../DAO/Event');
+const DAM = require('../DAM/Event');
 
 //insert, update 필요 변수 추출
 //**position에 소수점 혹은 음수가 있으면 false 리턴  */
@@ -62,7 +62,7 @@ const service = {
                 /**5 */
                 form.email = email;
                 form.ev_img = name_sharp;
-                DAO.insert(form, (err) => {
+                DAM.insert(form, (err) => {
                     if(err){
                         console.error('mysql event insert error');
                         fs.unlinkSync(file.path);
@@ -83,7 +83,7 @@ const service = {
         })
     },
     update : (file, body, email, callback) => {
-        //DAO 실행전 까지는 insert와 동일
+        //DAM 실행전 까지는 insert와 동일
         //**1. db update */
         //**2. s3 원본 이미지 업로드 */
         //**3. 임시 디렉토리 파일 삭제 */
@@ -113,7 +113,7 @@ const service = {
                 /**1 */
                 form.ev_img = name_sharp;
                 const update = JSON.parse(body.update);
-                DAO.update(form, update.num, email,  (err) => {
+                DAM.update(form, update.num, email,  (err) => {
                     if(err){
                         console.error('mysql event insert error');
                         fs.unlinkSync(file.path);
@@ -145,9 +145,9 @@ const service = {
         })
 
     },
-    //*** 여기 밑으로는 단순한 DAO connect service***
+    //*** 여기 밑으로는 단순한 DAM connect service***
     selectCalendar : (start, end, callback) => {
-        DAO.select(start, end, (err, result) => {
+        DAM.select(start, end, (err, result) => {
             if(err){
                 console.error('mysql event calendar select error');
             }
@@ -155,7 +155,7 @@ const service = {
         })
     },
     selectCarouesl : (start, callback) => {
-        DAO.select(start, null, (err, result) => {
+        DAM.select(start, null, (err, result) => {
             if(err){
                 console.error('mysql event carouesl error');
                 callback(err, result);
@@ -165,7 +165,7 @@ const service = {
         })
     },
     delete : (num, email, callback) => {
-        DAO.delete(num, email, (err, reslut) => {
+        DAM.delete(num, email, (err, reslut) => {
             if(err){
                 console.error('mysql event delete error')
             }

@@ -1,16 +1,18 @@
-const intercept_list  = require('./config/interceptorList.json');
+const intercept_list  = require('./config.json');
 const createdToken = require('../modules/CreateToken');
-const haur = require('./config/sessionHauer.json');
-//session touch, token reload, intercept
+const haur = require('../modules/config/sessionHauer.json');
 const interceptor = (req, res, next) => {
-    const url = req.url, arr = intercept_list,session = !!req.session.tokens;
+    const url = req.url, 
+    arr = intercept_list,session = !!req.session.tokens;
     let intercept = false, reload = false;
+
     for(let i = 0; i < arr.length; i++){
         if(url.indexOf(arr[i]) > -1){
             intercept =  true;
             break;
         }
     }
+    
     if(session){
         const time = new Date(req.session.cookie._expires) - new Date();
         if(time < 0){
@@ -26,12 +28,12 @@ const interceptor = (req, res, next) => {
             reload = true;
         }
     }
+
     if(!intercept || reload){
         next();
     }else{
         res.status(200).json({code:2, message:'tokens is not find'});
     }
-    
 }
 
 module.exports = interceptor;

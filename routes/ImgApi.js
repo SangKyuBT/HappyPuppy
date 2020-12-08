@@ -8,7 +8,7 @@ router.post('/rpb', (req, res) => {
   service.s3Base64(req.body, (err, b_imgs) => {
     if(err){
       console.log(err);
-      res.status(500).json({message : 0})
+      res.status(200).json({message : 0})
       res.end();
       return;
     }
@@ -19,22 +19,18 @@ router.post('/rpb', (req, res) => {
 //전송받은 이미지를 버퍼를 전송
 //에러처리는 imgData는 null 값이므로 console만 띄워 줌
 router.post('/return_buffer', (req, res) => { 
-  if(!!req.session.tokens){
-    rsUpload(req, res, (err) => {
+  rsUpload(req, res, (err) => {
+    if(err){
+      res.status(200).json({code:0, mesaage:'failed'});
+      return
+    }
+    service.base64(req.file.path, (err, imgData) => {
       if(err){
-        res.send('failed');
-        return
+        console.log(err);
       }
-      service.base64(req.file.path, (err, imgData) => {
-        if(err){
-          console.log(err);
-        }
-        res.send(imgData);
-      })
+      res.status(200).json({code:1, imgData:imgData});
     })
-  }else{
-    res.send('failed');
-  }
+  })
 })
 
 //밑에 부터는 s3에 저장된 이미지를 전송합니다.

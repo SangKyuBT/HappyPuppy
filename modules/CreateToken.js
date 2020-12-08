@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
-const secretObj = require('../config/jwt');
+const secretObj = require('./config/jwt');
+const haur = require('./config/sessionHauer.json');
 
 const signToken = (email) => {
     return jwt.sign({'email' : email}, secretObj.secret, { expiresIn : haur})

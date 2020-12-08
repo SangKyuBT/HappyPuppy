@@ -1,4 +1,4 @@
-const DAO = require('../DAO/Abandoned');
+const DAM = require('../DAM/Abandoned');
 const {practice} = require('../modules/S3');
 
 //insert, update 필요 변수 객체로 만들어 리턴
@@ -43,7 +43,7 @@ const deleteTofile = (main_key, sb_keys) => {
 }
 const service = {
     select : (place, num, callback) => {
-        DAO.select(place, num, (err, result) => {
+        DAM.select(place, num, (err, result) => {
             if(err){
                 console.error('mysql abandoned select error');
             }
@@ -54,7 +54,7 @@ const service = {
     insert : (form, files, email, callback) => {
         form = JSON.parse(form);
         const ab_info = createInfo(form, files, email);
-        DAO.insert(ab_info, (err) => {
+        DAM.insert(ab_info, (err) => {
             if(err){
                 console.error('abandoned mysql insert error');
             }
@@ -73,7 +73,7 @@ const service = {
         const ab_info = createInfo(form, files, false);
         /**1 */
         let {main_key, sb_keys} = update;
-        DAO.update(ab_info, update.num, (err) => {
+        DAM.update(ab_info, update.num, (err) => {
             if(err){
                 /**2 */
                 console.error('error is abandoned mysql update');
@@ -90,7 +90,7 @@ const service = {
     // db, s3 delete
     delete : (body, email, callback) => {
         var {main_key, sb_keys, num} = body;
-        DAO.delete(num, email, (err) => {
+        DAM.delete(num, email, (err) => {
             if(err){
                 console.error(`error is delete ${body.num}`);
             }else{

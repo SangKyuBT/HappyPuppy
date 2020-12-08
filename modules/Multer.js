@@ -6,7 +6,7 @@ const {s3, bucket} = require('./S3');
 const rsUpload = multer({
     storage: multer.diskStorage({
       destination: function (req, file, cb) {
-        cb(null, 'public/images/Reserve/');
+        cb(null, 'reserveImg/');
       },
       filename: function (req, file, cb) {
         cb(null, new Date().valueOf() + path.extname(file.originalname));
