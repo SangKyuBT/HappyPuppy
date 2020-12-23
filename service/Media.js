@@ -401,7 +401,6 @@ const service = {
     getMyGoodMedias : (email, callback) => {
         DAM.select('my_good', [email], (err, result) => {
             !err || console.error('error is mysql select to get my good medias');
-            console.log(result);
             callback(err, result);
         })
     },
@@ -436,7 +435,6 @@ const service = {
                     return;
                 }
                 rs.channels = !result.length ? null : result;
-                console.log(rs)
                 callback(err, rs);
             })
         })
@@ -541,7 +539,6 @@ const service = {
             
             DAM.update('media', [form, old_media.num], (err) => {
                 let _delete = null;
-                console.log(result[0]);
                 if(err){
                     console.error(err);
                     _delete = upload_keys;
