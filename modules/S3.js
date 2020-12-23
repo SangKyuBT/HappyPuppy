@@ -3,7 +3,7 @@
  업로드, 읽기, 삭제, 스트림, 헤더 정보 읽기, 부분 스트림
 */
 const aws = require("aws-sdk");
-aws.config.loadFromPath(__dirname + "/../config/awsconfig.json");
+aws.config.loadFromPath(__dirname + "/../config/aws_config.json");
 const s3 = new aws.S3();
 const bucket = require("./configs/bucket.json"); //버킷 정보
 
