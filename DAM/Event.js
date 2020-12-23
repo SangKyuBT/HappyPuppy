@@ -1,4 +1,7 @@
-const {select, insert, update, _delete} = require('./querySelector/event');
+/*
+ 행사 DAM
+*/
+const {select, insert, update, _delete} = require('./sqlSelector/event'); //sql 리턴
 const {connection} = require('./');
 
 const DAM = {

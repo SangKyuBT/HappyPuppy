@@ -1,5 +1,8 @@
-const {select, insert, update, _delete} = require('./querySelector/member');
-const {connection} = require('./');
+/*
+ 마이페이지 DAM
+*/
+const {select, insert, update, _delete} = require('./sqlSelector/member'); //sql 리턴
+const {connection} = require('./'); //커넥션 풀
 
 const DAM = {
     insert : (qk, values, callback) => {

@@ -1,8 +1,15 @@
+/*
+ 로그인 라우트
+ 로그인, 네이버 로그인
+*/
 let express = require('express');
 let router = express.Router();
 const service = require('../service/Login');
-const haur = require('../modules/configs/sessionHauer.json');
+const haur = require('../modules/configs/sessionHauer.json'); //세션 및 토큰 유지시간 기준
 
+/*
+ 로그인 요청
+*/
 router.post('/', (req, res) => {
     service.loginService(req.body, (err, result, token) => {
         if(err || !result){
@@ -20,19 +27,26 @@ router.post('/', (req, res) => {
     })
 })
 
+/*
+ 네이버 로그인 url 요청
+ @param p(string) : 네이버 로그인 요청시에 view route 위치
+*/
 router.post('/naver', (req, res) => {
     service.naverRedirect(req.body.p, (result) => {
         res.status(200).json({result: result});
     })
 })
 
-//로그인 요청이 들어오면 여기로 들어올거임
+/*
+ 네이버 로그인 후 페이지 리다이렉트
+ @param path(string) : 네이버 로그인 이후 이동할 view route path
+*/
 router.get('/callback/:path', (req, res) => {
-    service.naverLogin(req.query, (err, response, body) => {
+    service.naverLogin(req.query, (err, response, token) => {
         if(!err && response.statusCode === 200){
             req.session.cookie.expires = new Date(Date.now() + haur);
             req.session.cookie.maxAge = haur; 
-            req.session.tokens = body;
+            req.session.tokens = token;
             req.session.isLogined  = 2;
             req.session.save(function(){
                 res.redirect(`/${req.params.path}`);

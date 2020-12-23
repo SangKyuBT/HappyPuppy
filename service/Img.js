@@ -1,24 +1,32 @@
-const {practice} = require('../modules/S3');
-const fs = require('fs');
-const imgConvert = require('base64-img');
+/*
+ 이미지 서비스
+ S3 이미지 base64 인코딩, 이미지 응답
+*/
+const {practice} = require('../modules/S3'); //S3 모듈
+const fs = require('fs'); //파일 시스템
+const imgConvert = require('base64-img'); //이미지 base64 인코딩
+
 const service = {
-    //받은 이미지들을 base64로 인코딩하여 후 응답
-    s3Base64 : (paths, callback) => {
-        let num = 0;
-        const b_imgs = {};
-        Object.keys(paths).forEach(f => {
-            const path = `abandoned/${paths[f]}`;
-            practice.read(path, (err, data) => {
-                !err || console.error(err);
-                var base64 =  `data:image/jpg;base64,${data.Body.toString('base64')}`;
-                b_imgs[f] = base64;
-                if(++num > 3){
-                    callback(false, b_imgs);
-                }
-            })
+    /*
+     S3에 있는 이미지 base64로 인코딩하여 응답
+     @param poster(string) : S3 키
+    */
+    s3Base64 : (poster, callback) => {
+        practice.read(`abandoned/${poster}`, (err, data) => {
+            if(err){
+                console.error(err);
+                callback(err);
+                return;
+            }
+            var base64 =  `data:image/jpg;base64,${data.Body.toString('base64')}`;
+            callback(err, base64);
         })
     },
-    //전달 받은 경로의 이미지를 base64로 인코딩 후 해당 파일 삭제
+    
+    /*
+     임시 폴더에 있는 이미지 base64 인코딩하여 응답
+     @param path(string) : 임시 디렉토리내의 이미지 위치
+    */
     base64 : (path, callback) => {
         imgConvert.base64(path, (err, imgData) => {
             if(err){
@@ -28,7 +36,11 @@ const service = {
             callback(err, imgData);
         })
     },
-    //s3에서 전달 받은 키값의 이미지를 가져옴
+
+    /*
+     S3 이미지 응답
+     @param key : S3 키
+    */
     getImg : (key, callback) => {
         practice.read(key, (err, data) => {
             if(err){

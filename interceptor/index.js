@@ -1,9 +1,18 @@
-const list  = require('./config.json');
-const createdToken = require('../modules/CreateToken');
-const getEmail = require('../modules/getEmail');
-const haur = require('../modules/configs/sessionHauer.json');
-const {refresh} = require('../modules/NaverApi');
+/*
+ 인터셉터
+ 인가된 사용자만 요청가능한 url 확인
+ 세션 갱신 조건 확인 url 확인
+*/
+const list  = require('./config.json'); //검사할 url 배열(intertsept or unintersept)
+const createdToken = require('../modules/CreateToken'); // 토큰 생성
+const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
+const haur = require('../modules/configs/sessionHauer.json'); //세션 및 토큰 유지 시간
+const {refresh} = require('../modules/NaverApi'); //네이버 접근 토큰 갱신 요청
 
+/*
+ 인터셉트 하지않고 세션 갱신이 필요없는 요청 검사
+ 로그인 인가가 필요한 요청 검사
+*/
 const interceptor = (req, res, next) => {
     const url = req.url;
     const arr = list.intercept;

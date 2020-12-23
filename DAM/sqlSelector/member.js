@@ -15,12 +15,13 @@ const select = {
                     left outer join event ev on ev.email = mp.email group by mp.num)m  
                     left outer join abandoned ab  on ab.email = m.email   
                     group by m.num having m.email = ?`,
-    "channel_info" : `select mm.*, count(case when mt.think = 1 then 1 end) as good,   
-                     count(case when mt.think = 0 then 1 end) as bad from   
-                     (select m.num, m.email, sum(m.count) as mc, count(sc.channel_email) as sc  from media m   
-                     left outer join script_list sc on m.email = sc.channel_email group by m.num)mm   
-                     left outer join media_think mt on mm.num = mt.num   
-                     group by mm.num having mm.email = ?`,
+    "channel_info" : `select mm.*, count(sc.channel_email) as sc from
+                    (select m.email, sum(m.count)as mc , count(case when mt.think = 1 then 1 end) as good,   
+                    count(case when mt.think = 0 then 1 end) as bad from media m
+                    left outer join media_think mt on m.num = mt.num
+                    group by m.email)mm
+                    left outer join script_list sc on mm.email = sc.channel_email
+                    group by mm.email having mm.email = ?`,
     "my_events" : `select * from event where email = ?`,
     "my_abandoneds" : `select * from abandoned where email = ?`,
     "my_comments" : `select c.*, mp.nickname, mp.img from comments c   

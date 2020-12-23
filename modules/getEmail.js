@@ -1,15 +1,21 @@
-const {verifyToken} =  require('./CreateToken');
+/*
+ 사용자 이메일 추출
+*/
+const {verifyToken} =  require('./CreateToken'); //토큰 복호화
 
-
-const getEmail = (session) => {
+/*
+ 로그인 루트에 따른 사용자 이메일 리턴
+ @param data(obj) : 로그인 루트와 토큰이 담긴 객체
+*/
+const getEmail = (data) => {
     let email;
     try{
-        switch(session.isLogined){
+        switch(data.isLogined){
             case 1 :
-                email = verifyToken(session.tokens).email;
+                email = verifyToken(data.tokens).email;
                 break;
             case 2 :
-                const tokens = JSON.parse(session.tokens);
+                const tokens = JSON.parse(data.tokens);
                 email = verifyToken(tokens.email_token).email;
                 break
             default :

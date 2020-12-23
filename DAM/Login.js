@@ -1,5 +1,8 @@
-const {select, _delete} = require('./querySelector/login');
-const {connection} = require('./');
+/*
+ 로그인 DAM
+*/
+const {select, _delete} = require('./sqlSelector/login'); //sql 리턴
+const {connection} = require('./'); //커넥션 풀
 
 const DAM = {
     select : (qk, email, callback) => {

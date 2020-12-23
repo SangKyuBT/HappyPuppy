@@ -8,7 +8,7 @@ const select = {
                 (select nickname, img from member_profile where email = ?)b,
                 (select count(*) sl from script_list where channel_email = ?)c
                 order by d.date desc`,
-    "profile" : `select nickname, img from member_profile where email = ?`,
+    "profile" : `select email, nickname, img from member_profile where email = ?`,
     "script" : `select count(*) as count from script_list where channel_email = ?`,
     "my_script" : `select count(*) as count from script_list where channel_email = ? and member_email = ?`,
     "m_count" : `select m.m_count, s.sc_whether, c.ch_count from 
@@ -77,7 +77,7 @@ const update = {
     "my_comments_think" : `update comments_think set ? where num =? and email = ?`,
     "media_counting" : `update media_view set ? where num = ? and ip = ? and email = ?`,
     "media_counting_notemail" : `update media_view set ? where num = ? and ip = ? and email is null`,
-    "media_upcount" : `update media set count = count  1 where num = ?`
+    "media_upcount" : `update media set count = count + 1 where num = ?`
 }
 
 const _delete = {

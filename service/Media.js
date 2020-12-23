@@ -1,9 +1,50 @@
-const DAM = require('../DAM/Media');
-const { practice } = require('../modules/S3');
-const { sort } = require('../modules/MediaSort');
+/*
+ 미디어 서비스
+ 미디어와 채널 및 댓글 정보 응답, 
+ 영상 스트림 응답, 
+ 구독 관련, 
+ DAM 호출
+*/
+const DAM = require('../DAM/Media'); //데이터베이스 엑세스 모듈
+const { practice } = require('../modules/S3'); //S3 모듈
+const { sort } = require('../modules/MediaSort'); //미디어 조건에 따른 정렬
 
 const service = {
-    //해당 채널의 정보들을 가져와서 클라이언트에게 전송
+    /*
+     영상 S3 스트림 응답
+     @param key(string) : 영상 이름
+     @param range(string) : 요청 영상 범위
+    */
+   getVideo : (key, range, callback)=>{
+        practice.headRead(key, (err, data) => {
+            if(err){
+                console.error('error is get video s3 head read');
+                callback(err);
+                return
+            }
+            const total = data.ContentLength, 
+            item = range.split('=')[1].split('-'),
+            start = Number(item[0]),
+            j = Number(item[1]),
+            end = j ? j : total - 1, 
+            content_rength = (end - start) + 1; 
+
+            const header = { 
+                'AcceptRanges': 'bytes',
+                'Content-Range' : "bytes " + start + "-" + end + "/" + total,
+                'Content-Length' : content_rength,
+                'Content-Type' : 'video/mp4',
+            }
+            const stream = practice.rangeStream(key, range);
+            callback(err, stream, header);
+        })
+    },
+
+    /*
+     DB select, 해당 채널의 정보 응답
+     @param email(string) : 대상 이메일
+     @param session_email(email) : 회원 자신의 채널인지 아닌지 구별
+    */
     getChannel : (email, session_email, callback) => {
         DAM.select('member', email, (err, result) => {
             if(err || result.length === 0){
@@ -23,7 +64,6 @@ const service = {
                 }
                 channel.first_media = result[0];
                 channel.medias = sort(result);
-                // sort(result);
                 channel.script_list = result;
                 DAM.select('my_script',[email, session_email], (err, result) => {
                     if(err){
@@ -35,7 +75,12 @@ const service = {
             })
         })
     },
-    //구독
+
+    /*
+     DAM insert, 구독 정보 추가
+     @param email(string) : 대상 이메일
+     @param my_email(string) : 회원 이메일
+    */
     scripting : (email, my_email, callback) => {
         DAM.insert('script', {channel_email:email, member_email:my_email}, (err) => {
             if(err){
@@ -44,7 +89,12 @@ const service = {
             callback(err);
         })
     },
-    //구독 취소
+
+    /*
+     DB delete, 구독 정보 삭제
+     @param email(string) : 대상 이메일
+     @param my_email(string) : 회원 이메일
+    */
     unscripting : (email, my_email, callback) => {
         DAM.delete('script', [email, my_email], (err) => {
             if(err){
@@ -53,7 +103,13 @@ const service = {
             callback(err);
         })
     },
-    //해당 영상의 영상 댓글 갯수와 사용자, 프로필 정보
+
+    /*
+     DB select, 미디어 댓글 갯수, 사용자 프로필 정보 응답
+     @param num(number) : 미디어 번호
+     @param email(string) : 대상 이메일
+     @param s_email(string) : Authorization 이메일
+    */
     getMCCount : (num, email, s_email, callback) => {
         DAM.select('m_count', [num, email, s_email, email], (err, result) => {
             if(err){
@@ -68,7 +124,11 @@ const service = {
             })
         })
     },
-    //해당 영상 번호의 모든 댓글
+    
+    /*
+     DB select, 미디어의 댓글정보 응답
+     @param num(number) : 미디어 번호
+    */
     getComments: (num, callback) => {
         DAM.select('all_comments', [num], (err, result) => {
             if(err){
@@ -92,7 +152,12 @@ const service = {
             callback(err, datas);
         })
     },
-    //댓글 insert
+    
+    /*
+     DB insert, 댓글 추가
+     @param params(obj) : 댓글 정보 객체
+     @param email(string) : 
+    */
     insertComment : (params, email, callback) => {
         params.email = email;
         params.date = new Date();
@@ -101,7 +166,13 @@ const service = {
             callback(err);
         })
     },
-    //댓글 좋아요 or 싫어요
+    
+    /*
+     DB insert or delete or update, 댓글 혹은 미디어 좋아요 싫어요
+     @param key(boolean) : 대상 테이블이 댓글이냐 미디어냐를 구분
+     @param email(string) : Authorization 이메일
+     @param params(obj) : 좋아요 or 싫어요 정보 객체
+    */
     setThink : (key, email, params, callback) => {
         const qk = key ? 'my_media_think' : 'my_comments_think';
         DAM.select(qk, [params.num, email], (err, result) =>{
@@ -137,8 +208,13 @@ const service = {
             }
         })
     },
-    //조건에 따른 조회수 증가
-    //조건 = ip, email, time
+
+    /*
+     DB select, insert or update, 조회수 증가 조건 검사 후 조회수 증가
+     @param num(number) : 미디어 번호
+     @param ip(string) : 사용자 ip
+     @param email(string) : 세션 이메일
+    */
     mediaCounting : (num, ip, email, callback) => {
         let qk = 'media_counting_notemail'
         let values = [num, ip];
@@ -167,10 +243,14 @@ const service = {
                     values.unshift({date : now_date});
                     DAM.update(qk, values, (err) => {
                         !err || console.error('error is mysql update to media counting');
-                        console.log('update!!')
+                        callback(err, code);
                     })
+                    DAM.update('media_upcount', [num], (err) => {
+                        !err || console.error(err);
+                    })
+                }else{
+                    callback(err, code);
                 }
-                callback(err, code);
             }else{
                 const values = {
                     num : num,
@@ -183,13 +263,17 @@ const service = {
                     callback(err, 1);
                 })
                 DAM.update('media_upcount', [num], (err) => {
-                    !err || console.error('error is mysql update to media count up');
+                    !err || console.error(err);
                 })
             }
+
         })
     },
-    //홈 미디어 응답
-    //로그인 상태라면 정렬 조건에 구독 점수 추가
+    
+    /*
+     DB select, 홈 미디어 응답
+     @param list(array) : 구독자 배열
+    */
     getHomeMedias : (list, callback) => {
         let home_medias;
         DAM.select('All', (err, result) => {
@@ -198,7 +282,7 @@ const service = {
                 callback(err);
                 return;
             }
-            if(!list.length){
+            if(!Array.isArray(list) || !list.length){
                 home_medias = sort(result);
                 callback(err, home_medias);
                 return
@@ -215,7 +299,11 @@ const service = {
             callback(err, home_medias);
         })
     },
-    //회원 구독 정보 응답
+    
+    /*
+     DB select, 회원 구독 정보 요청
+     @param email(string) : 세션 이메일
+    */
     getMyscript : (email, callback) => {
         if(!email){
             callback(false, []);
@@ -226,8 +314,11 @@ const service = {
             callback(err, result);
         })
     },
-    //인기 미디어 응답
-    //정렬 조건 : 주간 조회수, 최근, 카테고리
+ 
+    /*
+     DB select, 조건에 따라 인기 미디어 응답 
+     @조건 : 주간 조회수, 최근, 카테고리
+    */
     getPopMedias : (callback) => {
         let rs = {
             recently : null,
@@ -271,7 +362,11 @@ const service = {
             })
         })
     },
-    //구독자 미디어 응답
+    
+    /*
+     DB select, 구독자 미디어 정보 응답
+     @param list(array) : 구독자 배열
+    */
     getScriptMedias : (list, callback) => {
         let in_arr = [];
         let rs_obj = {};
@@ -298,6 +393,11 @@ const service = {
             callback(err, rs_obj);
         })
     },
+
+    /*
+     DB select, 좋아요를 표시한 미디어 응답
+     @param email(string) : 세션 이메일
+    */
     getMyGoodMedias : (email, callback) => {
         DAM.select('my_good', [email], (err, result) => {
             !err || console.error('error is mysql select to get my good medias');
@@ -305,6 +405,11 @@ const service = {
             callback(err, result);
         })
     },
+
+    /*
+     DB select, 키워드에 일치하는 미디어 및 채널 응답
+     @param keyword(string) : 검색 키워드
+    */
     searchKeyword: (keyword, callback) => {
         const arr = keyword.split(' ');
         let keywords = [];
@@ -336,6 +441,12 @@ const service = {
             })
         })
     },
+
+    /*
+     DB select, delete, 미디어 삭제
+     @param num(number) : 미디어 번호
+     @param email(string) : Authorization 이메일
+    */
     deleteMeida : (num, email, callback) => {
         DAM.select('media', [num], (err, result) => {
             if(err || result.length < 1 || result[0].email !== email){
@@ -351,6 +462,12 @@ const service = {
             })
         })
     },
+
+    /*
+     DB select, delete, 댓글 삭제
+     @param num(number) : 댓글 번호
+     @param email(string) : Authorization 이메일
+    */
     deleteComments : (num, email, callback) => {
         DAM.select('comments', [num], (err, result) => {
             if(err){
@@ -367,7 +484,13 @@ const service = {
             }
         })
     },
-    //media upload
+
+    /*
+     DB insert, 미디어 업로드
+     @param form(obj) : 영상 정보 문자열 객체
+     @param files(obj) : 이미지, 비디오 정보 객체
+     @param email(string) : 세션 이메일
+    */
     mediaUpload : (form, files, email, callback) => {
         form = JSON.parse(form);
         form.email = email,
@@ -388,6 +511,12 @@ const service = {
         })
     },
 
+    /*
+     DB select, update, 미디어 수정
+     @param form(obj) : 영상 정보 문자열 객체
+     @param files(obj) : 이미지, 비디오 정보 객체
+     @param email(string) : Authorization 이메일
+    */
     mediaUpdate : (form, files, num, email, callback) => {
         DAM.select('media', [num], (err, result) => {
             if(err || result.length < 1 || result[0].email !== email){
@@ -428,49 +557,7 @@ const service = {
             });
         })
     },
-    //비디오 스트리밍
-    //**1. s3에서 오브젝트의 정보만을 가져옴
-    //**2. 받아온 정보들로 헤더에 들어갈 객체 생성(영상 시작, 끝, 총 길이, 재생 길이)
-    //**3. s3에서 stream 호출
-    //**4. 스트림과 헤더를 callback에 전송
-    getVideo : (key, range, callback)=>{
-        /**1 */
-        practice.headRead(key, (err, data) => {
-            if(err){
-                console.error('error is get video s3 head read');
-                callback(err);
-                return
-            }
-            /**2 */
-            const total = data.ContentLength, //영상의 전체 용량
-            //받아온 range에서 영상 시작과 끝 범위를 추출
-            item = range.split('=')[1].split('-');
-            start = Number(item[0]); //영상 시작
-            j = Number(item[1]);
-            end = j ? j : total - 1; //영상 끝
-            content_rength = (end - start) + 1; //재생 길이
-            const header = { //헤더에 들어갈 객체
-                'AcceptRanges': 'bytes',
-                'Content-Range' : "bytes " + start + "-" + end + "/" + total,
-                'Content-Length' : content_rength,
-                'Content-Type' : 'video/mp4',
-            }
-            /**3 */
-            const stream = practice.rangeStream(key, range);
-            stream.on('error', function(err){
-                console.log(err.message);
-                return;
-            }).on('end', function(){
-                console.log('end straming');
-                return;
-            }).on('close', function(){
-                console.log('close straming');
-                return;
-            })
-            /**4 */
-            callback(err, stream, header);
-        })
-    }
+    
     
 }
 

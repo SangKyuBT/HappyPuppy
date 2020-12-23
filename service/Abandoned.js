@@ -1,7 +1,18 @@
-const DAM = require('../DAM/Abandoned');
-const {practice} = require('../modules/S3');
+/*
+ 실종 반려견 서비스
+ DB insert, update, delete, select
+ S3 deletes
+*/
+const DAM = require('../DAM/Abandoned'); //데이터베이스 엑세스 모듈
+const {practice} = require('../modules/S3'); //S3 연결 및 동작 모듈
 
-//insert, update 필요 변수 객체로 만들어 리턴
+/*
+ insert, update 과정에 필요한 정보 리턴
+ @param form(obj) : 문자열 정보 객체
+ @param files(obj) : 업로드된 이미지 정보
+ @param email(string) : 세션 이메일
+ 코드 중복으로 인한 분리
+*/
 const createInfo = (form, files, email ) => {
     const sb_imgs = JSON.stringify({
         sb0 : files.sb0[0].key, 
@@ -10,7 +21,8 @@ const createInfo = (form, files, email ) => {
     });
     let ab_info = { 
         sb_imgs : sb_imgs,
-        main_img : files.main[0].key
+        main_img : files.main[0].key,
+        poster_img : files.poster[0].key
     };
     if(!!email){
         ab_info.email = email;
@@ -20,28 +32,36 @@ const createInfo = (form, files, email ) => {
     })
     return ab_info;
 }
-//key 값들을 params로 받아 s3 delete
-const deleteTofile = (main_key, sb_keys) => {
-    practice.delete(`abandoned/${main_key}`, (err) => {
-        if(err){
-            console.error(`error is delete ${main_key}`);
-            console.log(err)
-        }else{
-            console.log(`success is delete ${main_key}`)
-        }
+
+/*
+ S3 내의 이미지들을 삭제
+ @param main_key : 삭제할 매인 이미지 키값
+ @param poster_key : 삭제할 전단지 이미지 키값 
+ @param sb_keys(obj) : 삭제할 서브이미지들 객체
+ 코드 중복으로 인한 불리
+*/
+const deleteFiles = (main_key, poster_key, sb_keys) => {
+    const key = (key) => {
+        return {Key : `abandoned/${key}`}
+    }
+
+    const d_arr = [];
+    Object.keys(sb_keys).forEach(f => {
+        d_arr.push(key(sb_keys[f]));
     })
-    Object.keys(sb_keys).forEach( f => {
-        practice.delete(`abandoned/${sb_keys[f]}`, (err) => {
-            if(err){
-                console.error(`error is delete ${sb_keys[f]}`);
-                console.log(err)
-            }else{
-                console.error(`success is delete ${sb_keys[f]}`);
-            }
-        })
-    })
+    d_arr.push(key(main_key), key(poster_key));
+
+    practice.deletes(d_arr, (err)=>{
+        !err|| console.error(err);
+    });
 }
+
 const service = {
+    /*
+     파라미터를 keyword로 일치하는 정보를 응답
+     @param place(string) : 장소
+     @param num(number) : 전단지 번호
+    */
     select : (place, num, callback) => {
         DAM.select(place, num, (err, result) => {
             if(err){
@@ -50,7 +70,13 @@ const service = {
             callback(err, result);
         })
     },
-    //필요한 변수들을 추출 후 db insert
+
+    /*
+     실종 반려견 정보 DB insert
+     @param form(obj) : 문자열 정보 객체
+     @param files(obj) : 업로드된 이미지 정보 객체
+     @param email(string) : 세션 이메일
+    */
     insert : (form, files, email, callback) => {
         form = JSON.parse(form);
         const ab_info = createInfo(form, files, email);
@@ -61,46 +87,66 @@ const service = {
             callback(err);
         })
     },
-    //필요 변수들을 추출 후 update, s3에서 기존 파일 삭제
-    //**1. 삭제 파일들을 key 추출*/
-    //**2. db update 과정에서 error가 발생했다면  */
-    //     update돼야 했을 key값으로 변경
-    //**3. 추출 한 key 값으로 s3 파일 삭제 */
-    update : (form, files, callback) => {
+    
+    /*
+     실종 반려견 정보 DB update, S3 최신화
+     @param form(obj) : 문자열 정보 객체
+     @param files(obj) : 업로드된 파일 정보 객체
+     @email email(string) : Authorization 이메일
+    */
+    update : (form, files, email, callback) => {
         form = JSON.parse(form);
         const update = form.update;
+        let {main_key, sb_keys, poster_key} = update;
+        
+        if(email !== update.email){
+            console.error('abandeond update approach is not normal');
+            main_key = files.main[0].key
+            poster_key = files.poster[0].key
+            Object.keys(sb_keys).forEach(f => {
+                sb_keys[f] = files[f][0].key;
+            })
+            deleteFiles(main_key, poster_key, sb_keys);
+            callback(true);
+            return;
+        }
+
         delete form.update;
         const ab_info = createInfo(form, files, false);
-        /**1 */
-        let {main_key, sb_keys} = update;
         DAM.update(ab_info, update.num, (err) => {
             if(err){
-                /**2 */
                 console.error('error is abandoned mysql update');
                 main_key = files.main[0].key
+                poster_key = files.poster[0].key
                 Object.keys(sb_keys).forEach(f => {
                     sb_keys[f] = files[f][0].key;
                 })
             }
+            deleteFiles(main_key, poster_key, sb_keys);
             callback(err);
-            /**3 */
-            deleteTofile(main_key, sb_keys);
         })
     },
-    // db, s3 delete
+    
+    /*
+     실종 반려견 정보 삭제, S3 최신화
+     @param body(obj) : 삭제할 정보 객체
+     @param email(string) : Authorization 이메일
+    */
     delete : (body, email, callback) => {
-        var {main_key, sb_keys, num} = body;
+        var {main_key, sb_keys, num, poster_key} = body;
         DAM.delete(num, email, (err) => {
             if(err){
                 console.error(`error is delete ${body.num}`);
             }else{
                 sb_keys = JSON.parse(sb_keys);
-                deleteTofile(main_key, sb_keys);
+                deleteFiles(main_key, poster_key, sb_keys);
             }
             callback(err);
 
         })
     }
 }
+
+
 
 module.exports = service;

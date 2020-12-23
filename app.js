@@ -3,9 +3,9 @@ const createError = require('http-errors');
 const path = require('path');
 const logger = require('morgan');
 const loader = require('./loader');
-const b_url = "//localhost:3000"
-global.b_url = b_url;
+
 var app = express();
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.use(logger('dev'));

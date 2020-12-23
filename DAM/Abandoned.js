@@ -1,5 +1,8 @@
-const {select, insert, update, _delete} = require('./querySelector/abandoned');
-const {connection} = require('./');
+/*
+ 실종 반려견 DAM
+*/
+const {select, insert, update, _delete} = require('./sqlSelector/abandoned'); //sql 리턴
+const {connection} = require('./'); //커넥션 풀
 
 const DAM = {
     insert : (ab_info, callback) => {

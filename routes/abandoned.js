@@ -1,10 +1,16 @@
+/*
+  실종 반려견 라우트
+  실종 반려견에 대한 업로드, 수정, 삭제, 조회
+*/
 let express = require('express');
 let router = express.Router();
 const service = require('../service/Abandoned');
-const {abUpload} = require('../modules/Multer'); //s3 업로드 multer
-const getEmail = require('../modules/getEmail');
+const {abUpload} = require('../modules/Multer'); //실종 반려견 버킷 s3 업로드
+const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
 
-//실종 반려견 리스트를 전송
+/*
+ 실종 반려견에 대한 정보 요청
+*/
 router.get('/', (req, res) => {
     service.select(null, null, (err, result) => {
         if(err){
@@ -17,7 +23,10 @@ router.get('/', (req, res) => {
 
 })
 
-//받은 지역의 이름으로 일치하는 리스트를 전송
+/*
+ 지역에 따른 실종 반려견 정보 요청
+ @param place(string) : 검색하는 지역
+*/
 router.get('/place_search/:place', (req, res) => {
     if(!req.params.place){
         res.status(200).send({message : 0});
@@ -33,8 +42,10 @@ router.get('/place_search/:place', (req, res) => {
         res.status(200).json(rs)
     })
 })
-
-//받은 번호의 정보를 리턴
+/*
+ 번호에 따른 실종 반려견 정보 요청
+ @param num(number) : 실종 반려견 번호
+*/
 router.get('/target/:num', (req, res) => {
     if(!req.params.num){
         res.status(200).send({message : 0});
@@ -50,7 +61,12 @@ router.get('/target/:num', (req, res) => {
         res.status(200).json(rs)
     })
 })
-//반려견 포스터 insert
+
+/*
+ 업로드 요청
+ @param form(obj) : 실종 반려견 정보 객체
+ @param files(obj) : 실종 반려견 전단지 이미지 정보
+*/
 router.post('/insert_poster', (req, res) => {
     abUpload(req, res, (err) => {
         if(err){
@@ -67,21 +83,29 @@ router.post('/insert_poster', (req, res) => {
         })
     })
 })
+
+/*
+ 수정 요청
+ @param form(obj) : 실종 반려견 정보 객체
+ @param files(obj) : 실종 반려견 전단지 이미지 정보
+*/
 router.post('/update_poster', (req, res) => {
     abUpload(req, res, (err) => {
         if(err){
             res.status(200).json({code : 0});
             return;
         }
-        service.update(req.body.form, req.files, (err) => {
-            if(err){
-                res.status(200).json({code : 0});
-                return;
-            }
-            res.status(200).json({code:1});
+        const email = getEmail(req.session);
+        service.update(req.body.form, req.files, email, (err) => {
+            res.status(200).json({code : !err ? 1 : 0});
         })
     })
 })
+
+/*
+ 삭제 요청
+ @param body(obj) : 
+*/
 router.post('/delete_poster', (req, res) => {
     const email = getEmail(req.session);
     service.delete(req.body, email, (err) => {
@@ -93,4 +117,5 @@ router.post('/delete_poster', (req, res) => {
         res.status(200).json({code : 1});
     })
 })
+
 module.exports = router;

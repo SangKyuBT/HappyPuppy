@@ -1,3 +1,6 @@
+/*
+ 데이터베이스 엑세스
+*/
 const mysql = require('mysql');
 const _config = require('../config/db_config.json');
 

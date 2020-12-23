@@ -1,28 +1,18 @@
 /* 
   암호화 및 복호화 모듈
-  사용 모듈 : cryto
-  랜덤 암호화 문자열 생성, 문자열 암호화 및 복호화
+  함수 역할만 주석 달아놨습니다.
  */
 const crypto = require('crypto');
-const aad = Buffer.from('0123456789', 'hex');
+const aad = Buffer.from('0123456789', 'hex'); 
 
-/*
-  랜덤키 생성
-  파라미터: x = hex 갯수, y = base64 갯수
-  리턴 : 암호화 문자열
-*/
+//랜덤키 생성
 const createCertifyNumber = (x, y) => {
     var hex_key = crypto.randomBytes(256).toString('hex').substr(100, x); 
     var base64_key = crypto.randomBytes(256).toString('base64').substr(50, y); 
     return hex_key + base64_key;
 }
 
-/*
-  문자열 암호화
-  랜덤키, 유추 방지 암호, 문자열 암호화, 변조 방지 암호 생성
-  파라미터 : pas = 암호화할 문자열
-  리턴 : 암호화 객체
-*/
+// 암호화 객체 생성
 const encryption = (pas) => {
     const key = createCertifyNumber(8,8);
     const nonce = crypto.randomBytes(12);
@@ -45,11 +35,7 @@ const encryption = (pas) => {
     return item;
 }
 
-/*
-  암호화 객체 디코딩
-  파라미터 : pas = 암호화할 문자열
-  리턴 : 디코딩된 평문 문자열
-*/
+//암호화 객체 디코딩
 const ventriloquism = (item) => {
     const cp_nonce = Buffer.from(item.nonce, 'hex');
     const cp_text = Buffer.from(item.en,'hex');
@@ -74,6 +60,4 @@ const ventriloquism = (item) => {
 
 }
 
-module.exports.createCertifyNumber = createCertifyNumber;
-module.exports.encryption = encryption;
-module.exports.ventriloquism = ventriloquism;
+module.exports = { createCertifyNumber, encryption, ventriloquism }

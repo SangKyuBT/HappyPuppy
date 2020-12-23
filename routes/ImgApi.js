@@ -1,23 +1,26 @@
+/*
+ 이미지 라우트
+ 이미지 base64인코딩, 이미지 응답
+*/
 let express = require('express');
 let router = express.Router();
 const { service } = require('../service/Img');
-const {rsUpload} = require('../modules/Multer');
+const {rsUpload} = require('../modules/Multer'); //임시 디렉토리로 파일 업로드 모듈
 
-//받은 파일명들을 s3에서 다운로드한 뒤 base64로 인코딩 후 client에게 전송 
-router.post('/rpb', (req, res) => {
-  service.s3Base64(req.body, (err, b_imgs) => {
-    if(err){
-      console.log(err);
-      res.status(200).json({message : 0})
-      res.end();
-      return;
-    }
-    res.status(200).json({message : 1, b_imgs : b_imgs});
+/*
+ S3에 저장되어 있는 이미지를 base64인코딩 요청
+ @param poster(string) : 인코딩 요청 키
+*/
+router.get('/rpb/:poster', (req, res) => {
+  service.s3Base64(req.params.poster, (err, result) => {
+    res.status(200).json({message : !err ? 1 : 0, result : result});
   })
 });
 
-//전송받은 이미지를 버퍼를 전송
-//에러처리는 imgData는 null 값이므로 console만 띄워 줌
+/*
+ 이미지 base64 인코딩 요청
+ @param file(obj) : 임시 디렉토리로 업로드된 파일 정보
+*/
 router.post('/return_buffer', (req, res) => { 
   rsUpload(req, res, (err) => {
     if(err){
@@ -33,7 +36,11 @@ router.post('/return_buffer', (req, res) => {
   })
 })
 
-//밑에 부터는 s3에 저장된 이미지를 전송합니다.
+/*
+ 이미지 요청
+ @param name(string) : S3 버킷 이름
+ @param key(string) : S3 키
+*/
 router.get('/get_img/:name/:key', (req, res) => {
   let result = '';
   service.getImg(`${req.params.name}/${req.params.key}`, (err, data) => {
@@ -49,6 +56,11 @@ router.get('/get_img/:name/:key', (req, res) => {
   })
 });
 
+/*
+ 이미지 썸네일 요청
+ @param name1, name2(string) : S3 버킷 이름
+ @param key(string) : S3 키
+*/
 router.get('/get_thumbnail/:name1/:name2/:key', (req, res) => {
   let result = '';
   service.getImg(`${req.params.name1}/${req.params.name2}/${req.params.key}`, (err, data) => {
