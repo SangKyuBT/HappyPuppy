@@ -1,5 +1,11 @@
+/*
+ 지도 연관 검색 라우트
+*/
 const service = {
-    //map 연관 검색어 응답
+    /*
+     키워드로 지도 연관 검색어 응답
+     @param keyword(string) : 검색 키워드
+    */
     getKeywords : (keyword, callback) => {
         const URL = `https://m.map.naver.com/ac.map/mobilePlaceAddress/ac?q=${encodeURI(keyword)}&st=10&r_lt=10`;
         let keyword_list = [],
@@ -15,6 +21,11 @@ const service = {
             callback(error, keyword_list);
         })
     },
+
+    /*
+     연관 검색 이미지 요청
+     @param body(obj) : 요청 이미지 정보 객체
+    */
     getPlaceImgs : (body, callback) => {
         const ids = body, request = require('request');
         let urls = ids.map(item => {
