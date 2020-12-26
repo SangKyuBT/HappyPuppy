@@ -141,7 +141,22 @@ const service = {
                             callback(err, naver_res, tokens);
                         })
                     }else{
-                        callback(false, naver_res, tokens);
+                        const key = 'member_profile';
+                        DAM.select(key, email, (err, result) => {
+                            if(err){
+                                console.error(err);
+                                callback(err, naver_res, tokens);
+                                return;
+                            }
+                            if(result.length > 0){
+                                callback(err, naver_res, tokens);
+                            }else{
+                                DAM.insert(key, {email:email}, (err) => {
+                                    !err || console.error(err);
+                                    callback(err,  naver_res, tokens);
+                                })
+                            }
+                        })
                     }
                     
                 })
