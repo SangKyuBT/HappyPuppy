@@ -17,7 +17,7 @@ const service = {
         const email = body.email;
         DAM.select('member', email, (err, result) => {
             if(err || result.length === 0){
-                console.error('error is login, mysql select failed');
+                !err || console.error('error is login, mysql select failed')
                 callback(err, 0);
                 return;
             }
@@ -82,7 +82,7 @@ const service = {
         }else if(path.indexOf('/education') > -1){
             p = '/education'
         }else if(path.indexOf('/abandoned') > -1){
-            p = '/abandoned'
+            p = '/abandonedDog'
         }
         
         const url = naver.hrefURL(p);
