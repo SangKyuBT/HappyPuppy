@@ -19,8 +19,8 @@
 <li>Vue js의 모듈 정보는 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue/blob/master/package.json">여기</a>를 클릭하세요.</li><br>
 
 <h2>알림</h2>
-<li>테스트 하시는 본인의 aws-s3, aws-rds-mysql이 필요합니다.</li>
-<li>mysql을 꼭 aws-rds를 이용할 필요는 없습니다. 로컬에 설치된 mysql도 가능합니다. 단, 테스팅 환경이 로컬이 아니라면 외부 접속을 허용해야 합니다.</li>
+<li>테스트 하시는 본인의 AWS-S3, AWS-RDS-MySQL이 필요합니다.</li>
+<li>MySQL을 꼭 AWS-RDS를 이용할 필요는 없습니다. 로컬에 설치된 MySQL도 가능합니다. 단, 테스팅 환경이 로컬이 아니라면 외부 접속을 허용해야 합니다.</li>
 <li>본인의 AWS-S3의 버킷을 퍼블릭 객체로 설정하지 마십시오. 서버 사이드에서 요청하여 응답합니다</li>
 <li>네이버 로그인을 테스트해보고 싶으시다면 되도록 <a href="http://54.180.93.116/">배포중인 웹</a>에서 권장합니다. 로컬에서 해도 배포중인 웹으로 리다이렉트 됩니다.</li>
 <br>
