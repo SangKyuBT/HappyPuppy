@@ -1,9 +1,10 @@
 /*
  지도 연관 검색 라우트
 */
-let express = require('express');
-let router = express.Router();
-const {service} = require('../service/Relevant');
+import express from "express";
+import service from "../service/RelevantService";
+
+const router = express.Router();
 
 /*
  키워드 연관 검색 요청

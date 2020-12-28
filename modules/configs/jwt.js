@@ -1,5 +1,5 @@
 let jwtObj = {
-    'secret' : 'keybord cat'
+    'secret' : 'HPHP keybord dog'
 }
 
 module.exports = jwtObj;

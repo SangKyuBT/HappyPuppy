@@ -1,8 +1,8 @@
 /*
  로그인 DAM
 */
-const {select, _delete, insert} = require('./sqlSelector/login'); //sql 리턴
-const {connection} = require('./'); //커넥션 풀
+import { select, _delete, insert } from "./sqlSelector/login"; //sql 리턴
+import { connection } from "./"; //커넥션 풀
 
 const DAM = {
     select : (qk, email, callback) => {

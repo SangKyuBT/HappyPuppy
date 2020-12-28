@@ -2,11 +2,12 @@
   실종 반려견 라우트
   실종 반려견에 대한 업로드, 수정, 삭제, 조회
 */
-let express = require('express');
-let router = express.Router();
-const service = require('../service/Abandoned');
-const {abUpload} = require('../modules/Multer'); //실종 반려견 버킷 s3 업로드
-const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
+import express from "express";
+import service from "../service/AbandonedService";
+import { abUpload } from "../modules/Multer"; //실종 반려견 버킷 s3 업로드
+import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
+
+const router = express.Router();
 
 /*
  실종 반려견에 대한 정보 요청
@@ -42,6 +43,7 @@ router.get('/place_search/:place', (req, res) => {
         res.status(200).json(rs)
     })
 })
+
 /*
  번호에 따른 실종 반려견 정보 요청
  @param num(number) : 실종 반려견 번호

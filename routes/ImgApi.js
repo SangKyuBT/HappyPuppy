@@ -2,10 +2,12 @@
  이미지 라우트
  이미지 base64인코딩, 이미지 응답
 */
-let express = require('express');
-let router = express.Router();
-const { service } = require('../service/Img');
-const {rsUpload} = require('../modules/Multer'); //임시 디렉토리로 파일 업로드 모듈
+
+import express from "express";
+import service from "../service/ImgApiService";
+import { rsUpload } from "../modules/Multer"; //임시 디렉토리로 파일 업로드 모듈
+
+const router = express.Router();
 
 /*
  S3에 저장되어 있는 이미지를 base64인코딩 요청

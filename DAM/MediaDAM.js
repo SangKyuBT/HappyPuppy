@@ -1,8 +1,8 @@
 /*
  미디어 DAM
 */
-const {select, insert, update, _delete} = require('./sqlSelector/media'); //sql 리턴
-const {connection} = require('./'); //커센션 풀
+import { select, insert, update, _delete } from "./sqlSelector/media"; //sql 리턴
+import { connection } from "./"; //커넥션 풀
 
 const DAM = {
     insert : (qk, values, callback) => {

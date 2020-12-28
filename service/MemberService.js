@@ -1,11 +1,15 @@
-const DAM = require('../DAM/Member');
-const {practice} = require('../modules/S3');
-const fs = require('fs');
-const {transporter, from} = require('../modules/SendMail');
-const createSecret = require('../modules/CreateSecret');
+/*
+ 마이페이지 서비스
+ 프로필 이미지 변경, 비밀번호 변경, 회원 활동정보 응답
+*/
+import DAM from "../DAM/MemberDAM"; //데이터베이스 엑세스 모듈
+import { practice } from "../modules/S3"; //S3 엑세스 모듈
+import { transporter, from } from "../modules/SendMail"; //메일 전송 모듈
+import createSecret from "../modules/CreateSecret"; //문자열 암호화 모듈
+import fs from "fs";
 const delete_time = 900000; //메일 전송 정보 삭제 시간
 
-const service = {
+class Service{
     /*
      회원 프로필 이미지 변경
      s3 업로드 및 기존 파일 삭제 후 DB Update, 임시 디렉토리의 이미지 삭제
@@ -13,7 +17,7 @@ const service = {
      @param body(obj) : 프로필 정보 객체
      @param email(string) : 세션 이메일
     */
-    updateImage : (file, body, email, callback) => {
+    updateImage(file, body, email, callback){
         const bl = Number(body.n),
         insert_key = `member/${file.filename}`,
         delete_key = `member/${body.delete_key}`;
@@ -52,13 +56,13 @@ const service = {
                 callback(err, file.filename);
             })
         })
-    },
+    };
 
     /*
      회원 채널의 정보 응답
      @param email(string) : session email
     */
-   getMyMedias : (email, callback) => {
+    getMyMedias(email, callback){
         const rs = {medias:null, comments:null};
         DAM.select('my_medias', [email], (err, result) => {
             if(err){
@@ -124,13 +128,13 @@ const service = {
                 callback(err, rs);
             }
         })
-    },
+    };
     
     /*
      인증 메일 전송
      @param email(string) : 대상 이메일
     */
-    sendMail: (email, callback) => {
+    sendMail(email, callback){
         DAM.select('member', [email], (err, result) => {
             if(err || result[0].count < 1){
                 !err || console.error(err);
@@ -168,13 +172,13 @@ const service = {
                 }, delete_time)
             })
         })
-    },
+    };
     
     /*
      비밀번호 변경
      @param info(obj) : 비밀번호 정보 객체
     */
-    findPass: (info, callback) => {
+    findPass(info, callback){
         const {email, certify_number, password} = info;
         DAM.select('pass_find', [certify_number, email], (err, result)=>{
             if(err || result.length < 1){
@@ -192,65 +196,63 @@ const service = {
                 callback(err);
             })
         })
-    },
+    };
     
     /*
      회원의 행사, 실종반려견 활동의 대략적인 정보 응답
      @param email(string) : 세션 이메일 
     */
-    getInfo : (email, callback) => {
+    getInfo(email, callback){
         DAM.select('active_info',  [email], (err, result) => {
             !err || console.error(err);
             callback(err, result);
         })
-    },
+    };
 
     /*
      회원 채널의 대략적인 정보 응답
      @param email(string) : 세션 이메일
     */
-    getMediaInfo : (email, callback) => {
+    getMediaInfo(email, callback){
         DAM.select('channel_info', [email], (err, result) => {
             !err || console.error(err);
             callback(err, result);
         })
-    },
+    };
     
     /*
      회원 닉네임 변경
      @param nickname(string) : 변경할 닉네임
      @param email(string) : 세션 이메일
     */
-    updateNickname : (nickname, email, callback) => {
+    updateNickname(nickname, email, callback){
         DAM.update('nickname', [nickname, email], (err) => {
             !err || console.error(err);
             callback(err);
         })
-    },
+    };
     
     /*
      회원의 행사 활동 정보 응답
      @param email(string) : 세션 이메일
     */
-    getMyEvent : (email, callback) => {
+    getMyEvent(email, callback){
         DAM.select('my_events', [email], (err, result) => {
             !err || console.error(err);
             callback(err, result);
         })
-    },
+    };
     
     /*
      회원의 실종 반려견 활동 정보 응답
      @param email(string) : session email
     */
-    getMyAbandoned : (email, callback) => {
+    getMyAbandoned(email, callback){
         DAM.select('my_abandoneds', [email], (err, result) => {
             !err || console.error(err);
             callback(err, result);
         })
-    },
-    
-    
-}
+    };
+};
 
-module.exports.service = service;
+module.exports = new Service();

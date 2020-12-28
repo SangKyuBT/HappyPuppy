@@ -2,10 +2,11 @@
  로그인 상태 확인 라우트
  세션 상태 확인, 세션 이메일 응답, 세션 해제
 */
-let express = require('express');
-let router = express.Router();
-const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
-const {loginOut} = require('../service/Login'); // 로그인 서비스의 로그아웃 함수
+import express from "express";
+import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
+import { loginOut } from "../service/LoginService"; // 로그인 서비스의 로그아웃 함수
+
+const router = express.Router();
 
 /*
  현재 세션의 로그인 여부 응답

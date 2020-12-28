@@ -1,21 +1,19 @@
 /*
  미디어 서비스
  미디어와 채널 및 댓글 정보 응답, 
- 영상 스트림 응답, 
- 구독 관련, 
- DAM 호출
+ 영상 스트림 응답, 구독 관련
 */
-const DAM = require('../DAM/Media'); //데이터베이스 엑세스 모듈
-const { practice } = require('../modules/S3'); //S3 모듈
-const { sort } = require('../modules/MediaSort'); //미디어 조건에 따른 정렬
+import DAM from "../DAM/MediaDAM"; //데이터베이스 엑세스 모듈
+import { practice } from "../modules/S3"; //S3 모듈
+import { sort } from "../modules/MediaSort"; //미디어 조건에 따른 정렬
 
-const service = {
+class Service {
     /*
      영상 S3 스트림 응답
      @param key(string) : 영상 이름
      @param range(string) : 요청 영상 범위
     */
-   getVideo : (key, range, callback)=>{
+    getVideo(key, range, callback){
         practice.headRead(key, (err, data) => {
             if(err){
                 console.error('error is get video s3 head read');
@@ -38,14 +36,14 @@ const service = {
             const stream = practice.rangeStream(key, range);
             callback(err, stream, header);
         })
-    },
+    };
 
     /*
-     DB select, 해당 채널의 정보 응답
+     해당 채널의 정보 응답
      @param email(string) : 대상 이메일
      @param session_email(email) : 회원 자신의 채널인지 아닌지 구별
     */
-    getChannel : (email, session_email, callback) => {
+    getChannel(email, session_email, callback){
         DAM.select('member', email, (err, result) => {
             if(err || result.length === 0){
                 console.error('error is mysql select, get channel(member)');
@@ -74,43 +72,43 @@ const service = {
                 })
             })
         })
-    },
+    };
 
     /*
-     DAM insert, 구독 정보 추가
+     구독 정보 추가
      @param email(string) : 대상 이메일
      @param my_email(string) : 회원 이메일
     */
-    scripting : (email, my_email, callback) => {
+    scripting(email, my_email, callback){
         DAM.insert('script', {channel_email:email, member_email:my_email}, (err) => {
             if(err){
                 console.error('error is mysql insert script list');
             }
             callback(err);
         })
-    },
+    };
 
     /*
-     DB delete, 구독 정보 삭제
+     구독 정보 삭제
      @param email(string) : 대상 이메일
      @param my_email(string) : 회원 이메일
     */
-    unscripting : (email, my_email, callback) => {
+    unscripting(email, my_email, callback){
         DAM.delete('script', [email, my_email], (err) => {
             if(err){
                 console.error('error is mysql insert script list');
             }
             callback(err);
         })
-    },
+    }
 
     /*
-     DB select, 미디어 댓글 갯수, 사용자 프로필 정보 응답
+     미디어 댓글 갯수, 사용자 프로필 정보 응답
      @param num(number) : 미디어 번호
      @param email(string) : 대상 이메일
      @param s_email(string) : Authorization 이메일
     */
-    getMCCount : (num, email, s_email, callback) => {
+    getMCCount(num, email, s_email, callback){
         DAM.select('m_count', [num, email, s_email, email], (err, result) => {
             if(err){
                 console.error('error is mysql select media comment count');
@@ -123,13 +121,13 @@ const service = {
                 callback(err, rs, result[0]);
             })
         })
-    },
+    };
     
     /*
-     DB select, 미디어의 댓글정보 응답
+     미디어의 댓글정보 응답
      @param num(number) : 미디어 번호
     */
-    getComments: (num, callback) => {
+    getComments(num, callback){
         DAM.select('all_comments', [num], (err, result) => {
             if(err){
                 console.error('error is mysql select comments');
@@ -151,29 +149,29 @@ const service = {
             }
             callback(err, datas);
         })
-    },
+    };
     
     /*
-     DB insert, 댓글 추가
+     댓글 추가
      @param params(obj) : 댓글 정보 객체
      @param email(string) : 
     */
-    insertComment : (params, email, callback) => {
+    insertComment(params, email, callback){
         params.email = email;
         params.date = new Date();
         DAM.insert('comment', params, (err) => {
             !err || console.error('error is mysql insert comment');
             callback(err);
         })
-    },
+    };
     
     /*
-     DB insert or delete or update, 댓글 혹은 미디어 좋아요 싫어요
+     댓글 혹은 미디어 좋아요 싫어요
      @param key(boolean) : 대상 테이블이 댓글이냐 미디어냐를 구분
      @param email(string) : Authorization 이메일
      @param params(obj) : 좋아요 or 싫어요 정보 객체
     */
-    setThink : (key, email, params, callback) => {
+    setThink(key, email, params, callback){
         const qk = key ? 'my_media_think' : 'my_comments_think';
         DAM.select(qk, [params.num, email], (err, result) =>{
             if(err){
@@ -207,15 +205,15 @@ const service = {
                 })
             }
         })
-    },
+    };
 
     /*
-     DB select, insert or update, 조회수 증가 조건 검사 후 조회수 증가
+     조회수 증가 조건 검사 후 조회수 증가
      @param num(number) : 미디어 번호
      @param ip(string) : 사용자 ip
      @param email(string) : 세션 이메일
     */
-    mediaCounting : (num, ip, email, callback) => {
+    mediaCounting(num, ip, email, callback){
         let qk = 'media_counting_notemail'
         let values = [num, ip];
         if(!!email){
@@ -268,13 +266,13 @@ const service = {
             }
 
         })
-    },
+    };
     
     /*
-     DB select, 홈 미디어 응답
+     홈 미디어 응답
      @param list(array) : 구독자 배열
     */
-    getHomeMedias : (list, callback) => {
+    getHomeMedias(list, callback){
         let home_medias;
         DAM.select('All', (err, result) => {
             if(err){
@@ -298,13 +296,13 @@ const service = {
             }
             callback(err, home_medias);
         })
-    },
+    };
     
     /*
-     DB select, 회원 구독 정보 요청
+     회원 구독 정보 요청
      @param email(string) : 세션 이메일
     */
-    getMyscript : (email, callback) => {
+    getMyscript(email, callback){
         if(!email){
             callback(false, []);
             return;
@@ -313,13 +311,13 @@ const service = {
             !err || console.error(err);
             callback(err, result);
         })
-    },
+    };
  
     /*
-     DB select, 조건에 따라 인기 미디어 응답 
+     조건에 따라 인기 미디어 응답 
      @조건 : 주간 조회수, 최근, 카테고리
     */
-    getPopMedias : (callback) => {
+    getPopMedias(callback){
         let rs = {
             recently : null,
             pop : null,
@@ -361,13 +359,13 @@ const service = {
                 callback(err, rs);
             })
         })
-    },
+    };
     
     /*
-     DB select, 구독자 미디어 정보 응답
+     구독자 미디어 정보 응답
      @param list(array) : 구독자 배열
     */
-    getScriptMedias : (list, callback) => {
+    getScriptMedias(list, callback){
         let in_arr = [];
         let rs_obj = {};
         for(let i = 0; i < list.length; i++){
@@ -392,24 +390,24 @@ const service = {
             }
             callback(err, rs_obj);
         })
-    },
+    };
 
     /*
-     DB select, 좋아요를 표시한 미디어 응답
+     좋아요를 표시한 미디어 응답
      @param email(string) : 세션 이메일
     */
-    getMyGoodMedias : (email, callback) => {
+    getMyGoodMedias(email, callback){
         DAM.select('my_good', [email], (err, result) => {
             !err || console.error('error is mysql select to get my good medias');
             callback(err, result);
         })
-    },
+    };
 
     /*
-     DB select, 키워드에 일치하는 미디어 및 채널 응답
+     키워드에 일치하는 미디어 및 채널 응답
      @param keyword(string) : 검색 키워드
     */
-    searchKeyword: (keyword, callback) => {
+    searchKeyword(keyword, callback){
         const arr = keyword.split(' ');
         let keywords = [];
         for(let i = 0; i < arr.length; i++){
@@ -438,14 +436,14 @@ const service = {
                 callback(err, rs);
             })
         })
-    },
+    };
 
     /*
-     DB select, delete, 미디어 삭제
+     미디어 삭제
      @param num(number) : 미디어 번호
      @param email(string) : Authorization 이메일
     */
-    deleteMeida : (num, email, callback) => {
+    deleteMeida(num, email, callback){
         DAM.select('media', [num], (err, result) => {
             if(err || result.length < 1 || result[0].email !== email){
                 !err || console.error(err);
@@ -459,14 +457,14 @@ const service = {
                 return;
             })
         })
-    },
+    };
 
     /*
-     DB select, delete, 댓글 삭제
+     댓글 삭제
      @param num(number) : 댓글 번호
      @param email(string) : Authorization 이메일
     */
-    deleteComments : (num, email, callback) => {
+    deleteComments(num, email, callback){
         DAM.select('comments', [num], (err, result) => {
             if(err){
                 console.error(err);
@@ -481,15 +479,15 @@ const service = {
                 })
             }
         })
-    },
+    };
 
     /*
-     DB insert, 미디어 업로드
+     미디어 업로드
      @param form(obj) : 영상 정보 문자열 객체
      @param files(obj) : 이미지, 비디오 정보 객체
      @param email(string) : 세션 이메일
     */
-    mediaUpload : (form, files, email, callback) => {
+    mediaUpload(form, files, email, callback){
         form = JSON.parse(form);
         form.email = email,
         form.img = files.img[0].key,
@@ -507,15 +505,15 @@ const service = {
             }
             callback(err);
         })
-    },
+    };
 
     /*
-     DB select, update, 미디어 수정
+     미디어 수정
      @param form(obj) : 영상 정보 문자열 객체
      @param files(obj) : 이미지, 비디오 정보 객체
      @param email(string) : Authorization 이메일
     */
-    mediaUpdate : (form, files, num, email, callback) => {
+    mediaUpdate(form, files, num, email, callback){
         DAM.select('media', [num], (err, result) => {
             if(err || result.length < 1 || result[0].email !== email){
                 !err || console.error(err);
@@ -553,9 +551,7 @@ const service = {
                 }
             });
         })
-    },
-    
-    
-}
+    };
+};
 
-module.exports.service = service;
+module.exports = new Service();

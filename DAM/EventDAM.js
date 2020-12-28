@@ -1,8 +1,8 @@
 /*
  행사 DAM
 */
-const {select, insert, update, _delete} = require('./sqlSelector/event'); //sql 리턴
-const {connection} = require('./');
+import { select, insert, update, _delete } from "./sqlSelector/event"; //sql 리턴
+import { connection } from "./"; //커넥션 풀
 
 const DAM = {
     insert : (form, callback) => {
@@ -24,6 +24,9 @@ const DAM = {
         connection(_delete, [num, email], (err, result) => {
             callback(err, result);
         })
+    },
+    classTest(name){
+        console.log(name);
     }
 }
 

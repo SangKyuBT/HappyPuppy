@@ -2,9 +2,10 @@
  회원가입 라우트
  인증번호 메일전송, 이메일 중복 확인, 회원가입 수행
 */
-let express = require('express');
-let router = express.Router();
-const { service } = require('../service/Join');
+import express from "express";
+import service from "../service/JoinService";
+
+const router = express.Router();
 
 /*
  인증 메일 전송 요청

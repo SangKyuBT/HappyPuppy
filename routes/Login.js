@@ -2,10 +2,11 @@
  로그인 라우트
  로그인, 네이버 로그인
 */
-let express = require('express');
-let router = express.Router();
-const service = require('../service/Login');
-const haur = require('../modules/configs/sessionHauer.json'); //세션 및 토큰 유지시간 기준
+import express from "express";
+import service from "../service/LoginService";
+import haur from "../modules/configs/sessionHauer.json"; //세션 및 토큰 유지시간 기준
+
+const router = express.Router();
 
 /*
  로그인 요청

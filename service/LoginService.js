@@ -2,18 +2,18 @@
  로그인 서비스
  로그인, 네이버 로그인
 */
-const DAM = require('../DAM/Login');
-const createSecret = require('../modules/CreateSecret'); //문자열 암호화 모듈
-const createToken = require('../modules/CreateToken'); //토큰 암호화 모듈
-const naver = require('../modules/NaverApi'); //네이버 로그인 모듈
-const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
+import DAM from "../DAM/LoginDAM"; //데이터베이스 엑세스 모듈
+import createSecret from "../modules/CreateSecret"; //문자열 암호화 모듈
+import createToken from "../modules/CreateToken"; //토큰 암호화 모듈
+import naver from "../modules/NaverApi"; //네이버 로그인 모듈
+import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
 
-const service = {
+class Service {
     /*
      로그인, 해당 이메일로 로그인 되있다면 대상 세션 로그아웃
      @param body(obj) : 로그인 이메일, 비밀번호
     */
-    loginService : (body, callback) => {
+    loginService(body, callback){
         const email = body.email;
         DAM.select('member', email, (err, result) => {
             if(err || result.length === 0){
@@ -69,13 +69,13 @@ const service = {
                 callback(err, 0);
             }
         })
-    },
+    };
 
     /*
      view route 위치가 포함된 네이버 로그인 url 응답
      @param path(string) : 네이버 로그인 요청시에 view route 위치
     */
-    naverRedirect : (path, callback) => {
+    naverRedirect(path, callback){
         let p = '/home'; 
         if(path.indexOf('/event') > -1){
             p = '/event'
@@ -87,13 +87,13 @@ const service = {
         
         const url = naver.hrefURL(p);
         callback(url);
-    },
+    };
 
     /*
      네이버 로그인, 해당 이메일로 로그인 되있다면 대상 세션 로그아웃
      @param query(obj) : 로그인 정보 객체
     */
-    naverLogin : (query, callback) => {
+    naverLogin(query, callback){
         const option = naver.login(query);
         var request = require('request')
         request.post(option, (error, response, body) => {
@@ -117,7 +117,7 @@ const service = {
                 delete body_obj.expires_in;
                 const naver_res = response,
                 tokens = JSON.stringify(body_obj);
-                // callback(error, response, JSON.stringify(body_obj));
+
                 DAM.select('sessions', null, (err, result) => {
                     if(err){
                         console.error(`error is naver to check sessions`);
@@ -162,20 +162,20 @@ const service = {
                 })
             })
         })
-    },
+    };
 
     /*
      로그 아웃 요청
      @param id(string) : SessionId
     */
-    loginOut : (id, callback) => {
+    loginOut(id, callback){
         DAM.delete(id, (err) => {
             if(err){
                 console.error('error is logout mysql delete');
             }
             callback(err);
         })
-    }
+    };
 };
 
-module.exports = service;
+module.exports = new Service();

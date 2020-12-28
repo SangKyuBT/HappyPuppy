@@ -1,8 +1,8 @@
 /*
  회원가입 DAM
 */
-const {select, insert, _delete} = require('./sqlSelector/join'); //sql 리턴
-const {connection} = require('./'); //커넥션 풀
+import { select, insert, _delete } from "./sqlSelector/join"; //sql 리턴
+import { connection } from "./"; //커넥션 풀
 
 const DAM = {
     select : (qk, params, callback) => {

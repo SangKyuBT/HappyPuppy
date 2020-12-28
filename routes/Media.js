@@ -2,11 +2,12 @@
  미디어 라우트
  구독 관련, 비디오 재생, 업로드, 수정, 삭제
 */
-let express = require('express');
-let router = express.Router();
-const {service} = require('../service/Media');
-const {mediaUpload} = require('../modules/Multer'); //미디어 S3업로드 
-const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
+import express from "express";
+import service from "../service/MediaService";
+import { mediaUpload } from "../modules/Multer"; //미디어 S3업로드 
+import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
+
+const router = express.Router();
 
 /*
  비디오 스트리밍 요청

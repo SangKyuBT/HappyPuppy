@@ -1,11 +1,12 @@
 /*
  마이페이지 라우트
 */
-let express = require('express');
-let router = express.Router();
-const {service} = require('../service/Member');
-const {rsUpload} = require('../modules/Multer'); //임시 디렉토리로 파일 업로드
-const getEmail = require('../modules/getEmail');// 로그인 루트에 따른 이메일 추출
+import express from "express";
+import service from "../service/MemberService";
+import { rsUpload } from "../modules/Multer"; //임시 디렉토리로 파일 업로드
+import getEmail from "../modules/getEmail"; // 로그인 루트에 따른 이메일 추출
+
+const router = express.Router();
 
 /*
  회원 프로필 수정 요청

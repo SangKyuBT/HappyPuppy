@@ -2,11 +2,12 @@
  행사 라우트
  이미지 추출, 업로드, 삭제 , 수정
 */
-let express = require('express');
-let router = express.Router();
-const {service} = require('../service/Event');
-const {rsUpload} = require('../modules/Multer'); //임시 디렉토리에 파일 업로드
-const getEmail = require('../modules/getEmail'); //로그인 루트에 따른 이메일 추출
+import express from "express";
+import service from "../service/EventService";
+import { rsUpload } from "../modules/Multer"; //임시 디렉토리에 파일 업로드
+import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
+
+const router = express.Router();
 
 /*
  행사 이미지 추출 및  행사 정보 업로드 요청
