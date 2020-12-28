@@ -2,7 +2,6 @@
  이미지 라우트
  이미지 base64인코딩, 이미지 응답
 */
-
 import express from "express";
 import service from "../service/ImgApiService";
 import { rsUpload } from "../modules/Multer"; //임시 디렉토리로 파일 업로드 모듈
@@ -36,7 +35,7 @@ router.post('/return_buffer', (req, res) => {
       res.status(200).json({code:1, imgData:imgData});
     })
   })
-})
+});
 
 /*
  이미지 요청

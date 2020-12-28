@@ -92,7 +92,10 @@ class Service{
                             !err || console.error(err);
                         })
                     }
-                    callback(err, false);
+                    DAM.delete('join_wait', [memeber_info.email], (err) => {
+                        !err || console.error(`error is join wait delete to ${email}`);
+                        callback(err, false);
+                    })
                 })
             })
         });

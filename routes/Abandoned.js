@@ -6,7 +6,6 @@ import express from "express";
 import service from "../service/AbandonedService";
 import { abUpload } from "../modules/Multer"; //실종 반려견 버킷 s3 업로드
 import getEmail from "../modules/getEmail"; //로그인 루트에 따른 이메일 추출
-
 const router = express.Router();
 
 /*

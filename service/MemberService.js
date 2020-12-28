@@ -191,9 +191,15 @@ class Service{
                 email
             ]
             DAM.update('member', values, (err) => {
-                !err || console.error(err);
-                console.log(5)
-                callback(err);
+                if(err){
+                    console.error(err);
+                    callback(err);
+                    return;
+                }
+                DAM.delete('pass_find', [email], (err) => {
+                    !err || console.error(`error is pass find delete to ${email}`);
+                    callback(err);
+                })
             })
         })
     };

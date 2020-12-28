@@ -31,7 +31,7 @@ class Service {
                         return
                     }
 
-                    var data, session_email, session = false, sessions_id, access_token;
+                    var data, session_email, session = false, sessions_id, access_token, i;
                     for(i = 0; i < result.length; i++){
                         data = JSON.parse(result[i].data);
                         session_email = getEmail(data);
