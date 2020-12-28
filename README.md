@@ -2,6 +2,13 @@
 <a href="http://54.180.93.116/">배포중인 웹</a> 입니다.<br>
 Vue js와 Node js를 공부 하면서 견주들을 위한 웹 어플리케이션을 만들어 보았습니다.<br><br>
 
+* list item 1
+	sdsdssd
+    * list item 1-1
+        * list item 2-1s
+    * list item 1-2
+
+
 [간략한 설명]<br>
 해당 프로젝트는 Vue Cli를 이용하여 생성한 웹팩을 run build한 프로젝트로 express 환경을 사용하였습니다.<br>
 멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출 기능을 제공합니다.<br>
