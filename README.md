@@ -18,7 +18,7 @@ api : 네이버 로그인, 카카오맵<br>
 사용 모듈은 package.json를 참고하세요.<br>
 Vue js의 모듈 정보는 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue/blob/master/package.json">여기</a>를 클릭하세요. <br><br>
 
-<h2>알림]</h2>
+<h2>알림</h2>
 테스트 하시는 본인의 aws-s3, aws-rds-mysql이 필요합니다.<br>
 mysql을 꼭 aws-rds를 이용할 필요는 없습니다. 로컬에 설치된 mysql도 가능합니다.
 단, 테스팅 환경이 로컬이 아니라면 외부 접속을 허용해야합니다.<br>
