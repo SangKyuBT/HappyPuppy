@@ -9,10 +9,10 @@ Vue js와 Node js를 공부 하면서 견주들을 위한 웹 어플리케이션
 
 
 <h2>간략한 설명</h2>
-해당 프로젝트는 Vue Cli를 이용하여 생성한 웹팩을 run build한 프로젝트로 express 환경을 사용하였습니다.
-멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출 기능을 제공합니다.<br>
-보안 토큰 및 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.<br>
-Vue js의 자세한 정보를 확인하고 싶으시다면 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue">여기</a>를 클릭하세요. <br><br>
+* 해당 프로젝트는 Vue Cli를 이용하여 생성한 웹팩을 run build한 프로젝트로 express 환경을 사용하였습니다.
+* 멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출 기능을 제공합니다.
+* 보안 토큰 및 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.
+* Vue js의 자세한 정보를 확인하고 싶으시다면 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue">여기</a>를 클릭하세요.
 
 프로젝트의 대략적인 사용 기술의 버전은 다음과 같습니다.<br>
 node 12.14.1<br>
