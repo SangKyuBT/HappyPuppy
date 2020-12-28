@@ -1,0 +1,139 @@
+create table member (
+email varchar(320) primary key,
+name varchar(30) not null,
+password_data varchar(320) not null
+);  
+
+create table member_profile(
+num int(10) not null auto_increment,
+email varchar(320) not null,
+nickname varchar(15),
+img varchar(37),
+primary key(num)
+);
+
+create table abandoned(
+num int(10) not null auto_increment,
+email varchar(320) not null ,
+ad_title varchar(24) not null,
+ad_name varchar(12) not null,
+ad_pone varchar(13) not null,
+ad_date varchar(10) not null,
+ad_place varchar(60) not null,
+ad_detail varchar(124) not null,
+ad_honorarium int(100),
+main_img varchar(37) not null,
+sb_imgs TINYTEXT not null,
+poster_img varchar(37) not null,
+primary key(num),
+foreign key(email)
+references member(email)
+on delete cascade
+);
+
+create table join_waits(
+certify_number char(10) primary key,
+wait_email varchar(320) not null
+);
+
+create table pass_find(
+certify_number char(10) primary key,
+wait_email varchar(320) not null
+);
+
+create table event(
+num int(10) not null auto_increment,
+ev_name varchar(20) not null,
+email varchar(320) not null,
+ev_url varchar(2000) not null,
+ev_start_date date not null,
+ev_end_date date,
+ev_img varchar(37) not null,
+primary key(num),
+foreign key(email)
+references member(email)
+on delete cascade
+);
+
+
+create table media(
+num int(10) not null auto_increment,
+email varchar(320) not null,
+img varchar(37) not null,
+video varchar(37) not null,
+count int(10) default 0,
+title varchar(50) not null,
+content varchar(50) not null,
+tag varchar(100),
+date datetime not null,
+category varchar(10),
+comment varchar(100),
+primary key(num),
+foreign key(email)
+references member(email)
+on delete cascade
+);
+
+create table script_list(
+channel_email varchar(320) not null,
+member_email varchar(320) not null,
+foreign key(channel_email)
+references member(email)
+on delete cascade,
+foreign key(member_email)
+references member(email)
+on delete cascade
+);
+
+create table comments(
+num int(10) not null auto_increment,
+email varchar(320) not null,
+m_target int(10) not null,
+c_target int(10),
+reply varchar(320),
+comment varchar(100) not null,
+good int(10) not null default 0,
+bad int(10) not null default 0,
+primary key(num),
+foreign key(email)
+references member(email)
+on delete cascade,
+foreign key(m_target)
+references media(num)
+on delete cascade
+);
+
+create table media_think(
+num int(10) not null,
+email varchar(320) not null,
+think int(1) not null,
+foreign key(num)
+references media(num)
+on delete cascade,
+foreign key(email)
+references member(email)
+on delete cascade
+);
+
+create table comments_think(
+num int(10) not null,
+email varchar(320) not null,
+think int(1) not null,
+foreign key(num)
+references comments(num)
+on delete cascade,
+foreign key(email)
+references member(email)
+on delete cascade
+);
+
+create table media_view(
+num int(10) not null,
+ip varchar(15) not null,
+email varchar(320),
+date datetime,
+foreign key(num)
+references media(num)
+on delete cascade
+);
+
