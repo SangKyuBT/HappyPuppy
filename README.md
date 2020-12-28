@@ -1,7 +1,9 @@
 [소개]
+
 <a href="http://54.180.93.116/">배포중인 웹</a>
 
 Vue js와 Node js를 공부 하면서 견주들을 위한 웹 어플리케이션을 만들어 보았습니다.
+
 
 
 [간략한 설명]
@@ -68,7 +70,6 @@ aws_config.json
 db_config.json
 
 {
-
     "host" : "<your mysql host>",
 	
     "port" : <3306(default)>,
@@ -79,8 +80,7 @@ db_config.json
 	
     "database": "<your database>",
 	
-    "connectionLimit": 30
-	
+    "connectionLimit": 30	
 }
 
 
