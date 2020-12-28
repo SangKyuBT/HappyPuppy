@@ -8,7 +8,7 @@ Vue js와 Node js를 공부 하면서 견주들을 위한 웹 어플리케이션
 보안 토큰 및 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.<br>
 Vue js의 자세한 정보를 확인하고 싶으시다면 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue">여기</a>를 클릭하세요. <br><br>
 
-프로젝트의 대략적인 사용 버전은 다음과 같습니다.<br>
+프로젝트의 대략적인 사용 기술의 버전은 다음과 같습니다.<br>
 node 12.14.1<br>
 npm 6.13.4<br>
 vue/cli 4.1.2<br>
