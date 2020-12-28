@@ -1,4 +1,8 @@
 <h2>소개</h2>
+<ul>
+	<li>asdasd</li>
+	<li>asdasd</li>
+	</ul>
 <a href="http://54.180.93.116/">배포중인 웹</a> 입니다.<br>
 Vue js와 Node js를 공부 하면서 견주들을 위한 웹 어플리케이션을 만들어 보았습니다.<br><br>
 
