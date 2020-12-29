@@ -43,7 +43,7 @@ class Service {
      @param email(string) : 세션 이메일
     */
     insert(file, body, email, callback){
-        const p = createShapParams(file.filename, file.destination, body);
+        const p = this.createShapParams(file.filename, file.destination, body);
         if(!p){
             callback(`sharp position error : ${position}`);
             return;
@@ -97,7 +97,7 @@ class Service {
      @param email(string) : Authorization 이메일
     */
     update(file, body, email, callback){
-        const p = createShapParams(file.filename, file.destination, body);
+        const p = this.createShapParams(file.filename, file.destination, body);
         if(!p){
             callback(`sharp position error : ${position}`);
             return;

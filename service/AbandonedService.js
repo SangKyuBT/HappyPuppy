@@ -29,7 +29,7 @@ class Service{
     */
     insert(form, files, email, callback){
         form = JSON.parse(form);
-        const ab_info = createInfo(form, files, email);
+        const ab_info = this.createInfo(form, files, email);
         DAM.insert(ab_info, (err) => {
             if(err){
                 console.error('abandoned mysql insert error');
@@ -56,13 +56,13 @@ class Service{
             Object.keys(sb_keys).forEach(f => {
                 sb_keys[f] = files[f][0].key;
             })
-            deleteFiles(main_key, poster_key, sb_keys);
+            this.deleteFiles(main_key, poster_key, sb_keys);
             callback(true);
             return;
         }
 
         delete form.update;
-        const ab_info = createInfo(form, files, false);
+        const ab_info = this.createInfo(form, files, false);
         DAM.update(ab_info, update.num, (err) => {
             if(err){
                 console.error('error is abandoned mysql update');
@@ -72,7 +72,7 @@ class Service{
                     sb_keys[f] = files[f][0].key;
                 })
             }
-            deleteFiles(main_key, poster_key, sb_keys);
+            this.deleteFiles(main_key, poster_key, sb_keys);
             callback(err);
         })
     };
@@ -89,7 +89,7 @@ class Service{
                 console.error(`error is delete ${body.num}`);
             }else{
                 sb_keys = JSON.parse(sb_keys);
-                deleteFiles(main_key, poster_key, sb_keys);
+                this.deleteFiles(main_key, poster_key, sb_keys);
             }
             callback(err);
 
