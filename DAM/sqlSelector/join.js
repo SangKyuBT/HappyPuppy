@@ -1,7 +1,8 @@
 const select = {
     "duplicate_email" : "select email from member where email = ?",
     "join_wait" : "select * from join_waits where certify_number = ? and wait_email = ?",
-    "member" : "select count(email) as count from member where email = ?"
+    "member" : "select count(email) as count from member where email = ?",
+    "member_profile" : "select count(email) as count from member_profile where email = ?",
 }
 
 const insert = {

@@ -25,7 +25,7 @@ const loader = (app) => {
         saveUninitialized: false,
     }));
 
-    app.use(interceptor); 
+    app.use('/api/*', interceptor); 
 
     app.use('/api/login_spv', loginSuperVisionRouter);
     app.use('/api/event', eventRouter);

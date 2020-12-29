@@ -16,14 +16,14 @@ const {refresh} = require('../modules/NaverApi'); //네이버 접근 토큰 갱�
 const interceptor = (req, res, next) => {
     const url = req.url;
     const arr = list.intercept;
-    const unarr = list.uninetercept
+    const un_arr = list.uninetercept
     const session = !!req.session.tokens;
     let intercept = false
     let reload = false;
     let unintercept = false;
 
-    for(let i = 0; i < unarr.length; i++){
-        if(url.indexOf(unarr[i]) > -1){
+    for(let i = 0; i < un_arr.length; i++){
+        if(url.indexOf(un_arr[i]) > -1){
             unintercept =  true;
             break;
         }

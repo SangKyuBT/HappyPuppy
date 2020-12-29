@@ -74,7 +74,6 @@ class Service{
                 callback(err, true);
                 return;
             }
-
             member_info.password_data = JSON.stringify(createSecret.encryption(member_info.password));
             delete member_info.password;
             delete member_info.certify_number;
@@ -85,18 +84,34 @@ class Service{
                     callback(err, false);
                     return;
                 }
-                DAM.insert("member_profile", member_info.email, (err) => {
+                DAM.select('member_profile', [member_info.email], (err, result ) => {
                     if(err){
                         console.error(err);
                         DAM.delete('member', [member_info.email], (err) => {
                             !err || console.error(err);
+                            callback(err, false);
+                        })
+                        return;
+                    }
+
+                    DAM.delete('join_wait', [member_info.email], (err) => {
+                        !err || console.error(err);
+                    })
+
+                    if(result[0].count > 0){
+                        callback(err, false);
+                    }else{
+                        DAM.insert("member_profile", member_info.email, (err) => {
+                            if(err){
+                                console.error(err);
+                                DAM.delete('member', [member_info.email], (err) => {
+                                    !err || console.error(err);
+                                })
+                            }
+                            callback(err, false);
                         })
                     }
-                    DAM.delete('join_wait', [memeber_info.email], (err) => {
-                        !err || console.error(`error is join wait delete to ${email}`);
-                        callback(err, false);
-                    })
-                })
+                });
             })
         });
     };

@@ -21,7 +21,7 @@ router.post('/profile', (req, res) => {
             return
         }
         
-        email = getEmail(req.session);
+        const email = getEmail(req.session);
         service.updateImage(req.file, req.body, email, (err, filename) => {
             if(err){
                 console.log(err);
