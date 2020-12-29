@@ -69,6 +69,6 @@ mail_config.json
 <li>localhost:3000으로 접속</li>
 
 <h2>업데이트 예정</h2>
-<li>시간이 허락된다면 Tyepscript 주입, 실시간 스트리밍 구현 예정입니다.</li>
+<li>시간이 허락된다면 Typescript 주입, 실시간 스트리밍 구현 예정입니다.</li>
 
 <h2>감사합니다.</h2>
