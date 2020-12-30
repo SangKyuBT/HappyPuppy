@@ -14,7 +14,6 @@ const router = express.Router();
 router.post('/', (req, res) => {
     service.loginService(req.body, (err, result, token) => {
         if(err || !result){
-            console.log(err);
             res.status(200).send({message : 0});
             return;
         }

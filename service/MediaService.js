@@ -131,6 +131,7 @@ class Service {
         DAM.select('all_comments', [num], (err, result) => {
             if(err){
                 console.error('error is mysql select comments');
+                console.error(err);
             }
             var comments = result;
             var datas = [];
