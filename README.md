@@ -4,7 +4,7 @@
 
 <h2>간략한 설명</h2>
 <li>해당 프로젝트는 Vue Cli를 이용하여 생성한 웹팩을 express에 run build한 프로젝트로 JS ES6를 기반으로 합니다.</li>
-<li>멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출 기능을 제공합니다.</li>
+<li>멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출, PDF생성 기능을 제공합니다.</li>
 <li>보안 토큰 및 문자열 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.</li>
 <li>Vue js의 자세한 정보를 확인하고 싶으시다면 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue">여기</a>를 클릭하세요.</li>
 <br>
