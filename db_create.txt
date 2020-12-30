@@ -92,8 +92,7 @@ m_target int(10) not null,
 c_target int(10),
 reply varchar(320),
 comment varchar(100) not null,
-good int(10) not null default 0,
-bad int(10) not null default 0,
+date datetime not null,
 primary key(num),
 foreign key(email)
 references member(email)
