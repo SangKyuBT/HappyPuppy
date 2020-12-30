@@ -35,7 +35,8 @@ const select = {
     "my_medias" : `select m.*, count(case when mt.think = 1 then 1 end) as good,  
                   count(case when mt.think = 0 then 1 end) as bad  
                   from media m left outer join media_think mt on mt.num = m.num  
-                  group by m.num having m.email = ? order by m.date desc`,               
+                  group by m.num having m.email = ? order by m.date desc`,     
+    "nickname" : `select count(nickname) as count from member_profile where email = ?`          
 }
 const _delete = {
     "pass_find" : `delete from pass_find where wait_email = ?`,

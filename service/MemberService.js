@@ -232,9 +232,21 @@ class Service{
      @param email(string) : 세션 이메일
     */
     updateNickname(nickname, email, callback){
-        DAM.update('nickname', [nickname, email], (err) => {
-            !err || console.error(err);
-            callback(err);
+        const k = "nickname";
+        DAM.select(k, nickname, (err, result) => {
+            if(err){
+                console.error(err);
+                callback(err, 0);
+                return;
+            }
+            if(result[0].count > 0){
+                callback(err, 3);
+                return
+            }
+            DAM.update('nickname', [nickname, email], (err) => {
+                !err || console.error(err);
+                callback(err, 1);
+            })
         })
     };
     

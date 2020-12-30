@@ -71,14 +71,12 @@ router.get('/nickname/:nickname', (req, res) => {
     const nickname = req.params.nickname;
     if(!!nickname && nickname.length <= 15){
         const email = getEmail(req.session);
-        service.updateNickname(nickname, email, (err) => {
+        service.updateNickname(nickname, email, (err, code) => {
             if(err){
-                console.log(err);
                 res.status(200).json({code:0});
                 return;
             }
-            console.log(`mysql ${email} nickname change success`);
-            res.status(200).json({code:1});
+            res.status(200).json({code:code});
         })
     }else{
         res.status(200).json({code:0})
