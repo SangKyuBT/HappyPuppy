@@ -14,7 +14,7 @@
 <li>vue/cli 4.1.2</li>
 <li>mysql 5.7.30</li>
 <li>aws(ec2, rds, s3)</li>
-<li>api : 네이버 로그인, 카카오맵</li>
+<li>api : 네이버 - 로그인 및 지도 연관 검색어, 카카오 - 지도 및 장소 이미지</li>
 <li>사용 모듈은 package.json를 참고하세요.</li>
 <li>Vue js의 모듈 정보는 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue/blob/master/package.json">여기</a>를 클릭하세요.</li><br>
 
