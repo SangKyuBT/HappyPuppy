@@ -135,7 +135,6 @@ router.get('/get_channel/:email', (req, res) => {
         const my_channel = req.params.email === session_email;
         service.getChannel(req.params.email, session_email, (err, check, result) => {
             if(err){
-                console.log(err);
                 res.status(200).json({code:0, message:'failed'});
                 return;
             }

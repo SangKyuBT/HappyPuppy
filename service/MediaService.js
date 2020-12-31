@@ -46,7 +46,7 @@ class Service {
     getChannel(email, session_email, callback){
         DAM.select('member', email, (err, result) => {
             if(err || result.length === 0){
-                console.error('error is mysql select, get channel(member)');
+                !err || console.error(err);
                 callback(err, false, result);
                 return;
             }
