@@ -4,8 +4,8 @@
 
 <h2>간략한 설명</h2>
 <li>해당 프로젝트는 Vue Cli를 이용하여 생성한 웹팩을 express에 run build한 프로젝트로 JS ES6를 기반으로 합니다.</li>
-<li>멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출 기능을 제공합니다.</li>
-<li>보안 토큰 및 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.</li>
+<li>멀티미디어 플랫폼으로 멀티미디어 업로드 및 동영상 스트리밍, 이미지 추출, PDF생성 기능을 제공합니다.</li>
+<li>보안 토큰 및 문자열 암호기능으로 관련 지식이 부족하나 보안에 신경섰습니다.</li>
 <li>Vue js의 자세한 정보를 확인하고 싶으시다면 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue">여기</a>를 클릭하세요.</li>
 <br>
 - 프로젝트의 대략적인 사용 기술의 버전은 다음과 같습니다.<br>
@@ -14,7 +14,7 @@
 <li>vue/cli 4.1.2</li>
 <li>mysql 5.7.30</li>
 <li>aws(ec2, rds, s3)</li>
-<li>api : 네이버 로그인, 카카오맵</li>
+<li>api : 네이버 - 로그인 및 지도 연관 검색어, 카카오 - 지도 및 장소 이미지</li>
 <li>사용 모듈은 package.json를 참고하세요.</li>
 <li>Vue js의 모듈 정보는 <a href="https://github.com/SangkyuGoodboyYesDoitsgoi/HappyPuppy-vue/blob/master/package.json">여기</a>를 클릭하세요.</li><br>
 
