@@ -339,7 +339,7 @@ class Service {
                     return
                 }
                 for(let i = 0; i < pop.length; i++){
-                    for(let j = 0; j<recently.length; j++){
+                    for(let j = 0; j < recently.length; j++){
                         if(pop[i].num === recently[j].num){
                             if(!recently[j].pop){
                                 recently[j].pop = 1;
