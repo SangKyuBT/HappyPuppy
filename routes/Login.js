@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
 */
 router.post('/naver', (req, res) => {
     console.log('ininin')
-    const result = service.naverLogin(req.body.p);
+    const result = service.naverRedirect(req.body.p);
     res.status(200).json({result});
 })
 
