@@ -5,20 +5,14 @@ import { select, _delete, insert } from "./sqlSelector/login"; //sql 리턴
 import { connection } from "./"; //커넥션 풀
 
 const DAM = {
-    select : (qk, email, callback) => {
-        connection(select[qk], [email], (err, result) => {
-            callback(err, result);
-        })
+    select : async (qk, email) => {
+        return await connection(select[qk], [email]);
     },
-    insert : (qk, values, callback) => {
-        connection(insert[qk], values, (err, result) => {
-            callback(err);
-        })
+    insert : async (qk, values) => {
+        return await connection(insert[qk], values, true);
     },
-    delete : (id, callback) => {
-        connection(_delete, id, (err, result) => {
-            callback(err);
-        })
+    delete : async (id) => {
+        return await connection(_delete, id, true);
     }
 }
 

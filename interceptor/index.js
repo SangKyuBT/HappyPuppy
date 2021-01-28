@@ -56,7 +56,6 @@ const interceptor = (req, res, next) => {
                     refresh(refresh_token, (err, res, body) => {
                         if(err || res.statusCode !== 200){
                             console.error(err);
-                            console.log('error is naver refresh');
                         }
                         return;
                     })

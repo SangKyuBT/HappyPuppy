@@ -13,13 +13,9 @@ class Service {
      @param key(string) : 영상 이름
      @param range(string) : 요청 영상 범위
     */
-    getVideo(key, range, callback){
-        practice.headRead(key, (err, data) => {
-            if(err){
-                console.error('error is get video s3 head read');
-                callback(err);
-                return
-            }
+    async getVideo(key, range){
+        try{
+            const data = await practice.headRead(key);
             const total = data.ContentLength, 
             item = range.split('=')[1].split('-'),
             start = Number(item[0]),
@@ -33,9 +29,14 @@ class Service {
                 'Content-Length' : content_rength,
                 'Content-Type' : 'video/mp4',
             }
+
             const stream = practice.rangeStream(key, range);
-            callback(err, stream, header);
-        })
+            return {stream, header};
+
+        }catch(err){
+            console.error(err);
+            throw new Error(err);         
+        }
     };
 
     /*
@@ -43,35 +44,28 @@ class Service {
      @param email(string) : 대상 이메일
      @param session_email(email) : 회원 자신의 채널인지 아닌지 구별
     */
-    getChannel(email, session_email, callback){
-        DAM.select('member', email, (err, result) => {
-            if(err || result.length === 0){
-                !err || console.error(err);
-                callback(err, false, result);
-                return;
+    async getChannel(email, session_email){
+        let check = true, result = false;
+        try{
+            const member = await DAM.select('member', email);
+            if(!member.length){
+                throw new Error(`channel is not find : ${email}`);
             }
-            let channel = {
-                member_profile : result[0]
-            }; 
-            
-            DAM.select('channel', [email, email, email], (err, result) => {
-                if(err){
-                    console.error('error is mysql select, get channel');
-                    callback(err, true, result);
-                    return;
-                }
-                channel.first_media = result[0];
-                channel.medias = sort(result);
-                channel.script_list = result;
-                DAM.select('my_script',[email, session_email], (err, result) => {
-                    if(err){
-                        console.error('error is mysql select, get my script');
-                    }
-                    channel.this_script = result;
-                    callback(err, true, channel);
-                })
-            })
-        })
+            let channel = {member_profile : member[0]};
+            const _channel = await DAM.select('channel', [email, email, email]);
+            channel.first_media = _channel[0];
+            channel.medias = sort(_channel);
+            channel.script_list = _channel;
+            const my_sc = await DAM.select('my_script', [email, session_email]);
+            channel.this_script = my_sc;
+            result = channel;
+        }catch(err){
+            console.error(err); 
+            check = false;          
+        }finally{
+            return {check, result};
+        }
+
     };
 
     /*
@@ -79,13 +73,15 @@ class Service {
      @param email(string) : 대상 이메일
      @param my_email(string) : 회원 이메일
     */
-    scripting(email, my_email, callback){
-        DAM.insert('script', {channel_email:email, member_email:my_email}, (err) => {
-            if(err){
-                console.error('error is mysql insert script list');
-            }
-            callback(err);
-        })
+    async scripting(email, my_email){
+        try{
+            await DAM.insert('script', {channel_email:email, member_email:my_email});
+            return true;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
+
     };
 
     /*
@@ -93,13 +89,14 @@ class Service {
      @param email(string) : 대상 이메일
      @param my_email(string) : 회원 이메일
     */
-    unscripting(email, my_email, callback){
-        DAM.delete('script', [email, my_email], (err) => {
-            if(err){
-                console.error('error is mysql insert script list');
-            }
-            callback(err);
-        })
+    async unscripting(email, my_email){
+        try{
+            await DAM.delete('script', [email, my_email]);
+            return true;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
     }
 
     /*
@@ -108,33 +105,28 @@ class Service {
      @param email(string) : 대상 이메일
      @param s_email(string) : Authorization 이메일
     */
-    getMCCount(num, email, s_email, callback){
-        DAM.select('m_count', [num, email, s_email, email], (err, result) => {
-            if(err){
-                console.error('error is mysql select media comment count');
-            }
-            const rs = result;
-            DAM.select('profile', [s_email], (err, result) => {
-                if(err){
-                    console.error('error is mysql selectmedia profile');
-                }
-                callback(err, rs, result[0]);
-            })
-        })
+    async getMCCount(num, email, s_email){
+        let comments, my_info, err;
+        try{
+            comments = await DAM.select('m_count', [num, email, s_email, email]);
+            my_info = await DAM.select('profile', [s_email]);
+        }catch(e){
+            console.error(e);
+            err = e;
+        }finally{
+            return {err, comments, my_info}
+        }
     };
     
     /*
      미디어의 댓글정보 응답
      @param num(number) : 미디어 번호
     */
-    getComments(num, callback){
-        DAM.select('all_comments', [num], (err, result) => {
-            if(err){
-                console.error('error is mysql select comments');
-                console.error(err);
-            }
-            var comments = result;
-            var datas = [];
+    async getComments(num){
+        var datas = false;
+        try{
+            const comments = await DAM.select('all_comments', [num]);
+            datas = [];
             for(let i = 0; i < comments.length; i++){
                 if(!comments[i].c_target){
                     datas.push(comments[i]);
@@ -148,8 +140,11 @@ class Service {
                     }
                 }
             }
-            callback(err, datas);
-        })
+        }catch(err){
+            console.error(err);
+        }finally{
+            return datas;
+        }
     };
     
     /*
@@ -157,13 +152,17 @@ class Service {
      @param params(obj) : 댓글 정보 객체
      @param email(string) : 
     */
-    insertComment(params, email, callback){
+    async insertComment(params, email){
         params.email = email;
         params.date = new Date();
-        DAM.insert('comment', params, (err) => {
-            !err || console.error('error is mysql insert comment');
-            callback(err);
-        })
+        let result = false;
+        try{
+            result = await DAM.insert('comment', params);
+        }catch(err){
+            console.error(err);
+        }finally{
+            return result;
+        }
     };
     
     /*
@@ -172,27 +171,20 @@ class Service {
      @param email(string) : Authorization 이메일
      @param params(obj) : 좋아요 or 싫어요 정보 객체
     */
-    setThink(key, email, params, callback){
+    async setThink(key, email, params){
         const qk = key ? 'my_media_think' : 'my_comments_think';
-        DAM.select(qk, [params.num, email], (err, result) =>{
-            if(err){
-                console.error('error is mysql select to my media think ');
-                callback(err);
-                return
-            }
+        let err, code;
+        try{
+            const think = await DAM.select(qk, [params.num, email]);
             let value = {};
-            if(result.length > 0){
-                if(result[0].think === Number(params.think)){
-                    DAM.delete(qk, [params.num, email], (err)=>{
-                        !err || console.error(`erro is mysql delete to ${qk}`);
-                        callback(err, 3);
-                    })
+            if(think.length > 0){
+                if(think[0].think === Number(params.think)){
+                    await DAM.delete(qk, [params.num, email]);
+                    code = 3;
                 }else{
                     value.think = params.think;
-                    DAM.update(qk, [value, params.num, result[0].email], (err) => {
-                        !err || console.error(`error is mysql update to ${qk}`);
-                        callback(err, 4);
-                    })
+                    await DAM.update(qk, [value, params.num, think[0].email]);
+                    code = 4;
                 }
             }else{
                 value = {
@@ -200,12 +192,15 @@ class Service {
                     email : email,
                     think : params.think
                 }
-                DAM.insert(qk, value, (err) => {
-                    !err || console.error(`error is mysql insert to ${qk}`);
-                    callback(err, 1);
-                })
+                await DAM.insert(qk, value);
+                code = 1;
             }
-        })
+        }catch(e){
+            console.error(e);
+            err = e;
+        }finally{
+            return {err, code};
+        }
     };
 
     /*
@@ -214,23 +209,17 @@ class Service {
      @param ip(string) : 사용자 ip
      @param email(string) : 세션 이메일
     */
-    mediaCounting(num, ip, email, callback){
-        let qk = 'media_counting_notemail'
-        let values = [num, ip];
+    async mediaCounting(num, ip, email){
+        let qk = 'media_counting_notemail', values = [num, ip], code, err;
         if(!!email){
             qk = 'media_counting';
             values[2] = email;
         }
-        DAM.select(qk, values, (err, result) => {
-            if(err){
-                console.error('error is mysql select to media counting');
-                callback(err);
-                return
-            }
-            let check = false;
-            let now_date = new Date();
+        try{
+            const result = await DAM.select(qk, values);
+            let check = false, now_date = new Date();
             if(result.length > 0){
-                let code = 3;
+                code = 3;
                 for(let i = 0; i < result.length; i++){
                     if(now_date - new Date(result[i].date) > 300000){
                         check = true;
@@ -240,51 +229,41 @@ class Service {
                 if(check){
                     code = 1;
                     values.unshift({date : now_date});
-                    DAM.update(qk, values, (err) => {
-                        !err || console.error('error is mysql update to media counting');
-                        callback(err, code);
-                    })
-                    DAM.update('media_upcount', [num], (err) => {
-                        !err || console.error(err);
-                    })
-                }else{
-                    callback(err, code);
+                    await DAM.update(qk, values);
                 }
             }else{
+                code = 1;
                 const values = {
                     num : num,
                     ip : ip,
                     email : email,
                     date : now_date,
                 }
-                DAM.insert('media_counting', values, (err) => {
-                    !err || console.error('error is mysql insert to media counting');
-                    callback(err, 1);
-                })
-                DAM.update('media_upcount', [num], (err) => {
-                    !err || console.error(err);
-                })
+                await DAM.insert('media_counting', values);
             }
-
-        })
+        }catch(e){
+            console.err(e);
+            err = e;
+        }finally{
+            try{
+                !err || DAM.update('media_upcount', [num]);
+            }catch(err){
+                console.error(err);
+            }
+            return {err, code};
+        }
     };
     
     /*
      홈 미디어 응답
      @param list(array) : 구독자 배열
     */
-    getHomeMedias(list, callback){
-        let home_medias;
-        DAM.select('All', (err, result) => {
-            if(err){
-                console.error('error is mysql select to home');
-                callback(err);
-                return;
-            }
+    async getHomeMedias(list){
+        var home_medias = false;
+        try{
+            const result = await DAM.select('All');
             if(!Array.isArray(list) || !list.length){
                 home_medias = sort(result);
-                callback(err, home_medias);
-                return
             }else{
                 for(let i = 0; i < list.length; i++){
                     for(let j = 0; j < result.length; j ++){
@@ -295,90 +274,86 @@ class Service {
                 }
                 home_medias = sort(result);
             }
-            callback(err, home_medias);
-        })
+        }catch(e){
+            console.error(e);
+        }finally{
+            return home_medias;
+        }
     };
     
     /*
      회원 구독 정보 요청
      @param email(string) : 세션 이메일
     */
-    getMyscript(email, callback){
+    async getMyscript(email){
         if(!email){
-            callback(false, []);
-            return;
+            return false;
         }
-        DAM.select('script_list', [email], (err, result) => {
-            !err || console.error(err);
-            callback(err, result);
-        })
+
+        try{
+            const result = await DAM.select('script_list', [email]);
+            return result;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
     };
  
     /*
      조건에 따라 인기 미디어 응답 
      @조건 : 주간 조회수, 최근, 카테고리
     */
-    getPopMedias(callback){
+    async getPopMedias(){
         let rs = {
             recently : null,
             pop : null,
             daily : [],
             education : [],
-        }
-        DAM.select('All', (err, recently) => {
-            if(err){
-                console.error('error is mysql select to All');
-                callback(err);
-                return
-            }
+        };
+        let err;
+        try{
+            const recently = await DAM.select('All');
             rs.recently = recently;
-            DAM.select('media_view', [new Date(Date.now() - 86400000), new Date()], (err, pop) => {
-                if(err){
-                    console.error('error is mysql to media_view');
-                    callback(err);
-                    return
-                }
-                for(let i = 0; i < pop.length; i++){
-                    for(let j = 0; j < recently.length; j++){
-                        if(pop[i].num === recently[j].num){
-                            if(!recently[j].pop){
-                                recently[j].pop = 1;
-                            }else{
-                                recently[j].pop ++;
-                            }
+            const pop = await  DAM.select('media_view', [new Date(Date.now() - 86400000), new Date()]);
+            for(let i = 0; i < pop.length; i++){
+                for(let j = 0; j < recently.length; j++){
+                    if(pop[i].num === recently[j].num){
+                        if(!recently[j].pop){
+                            recently[j].pop = 1;
+                        }else{
+                            recently[j].pop ++;
                         }
                     }
                 }
-                rs.pop = sort(recently);
-                for(let i = 0; i<rs.pop.length; i++){
-                    if(rs.pop[i].category === '일상'){
-                        rs.daily.push(rs.pop[i]);
-                    }else if(rs.pop[i].category === '교육'){
-                        rs.education.push(rs.pop[i]);
-                    }
+            }
+            rs.pop = sort(recently);
+            for(let i = 0; i<rs.pop.length; i++){
+                if(rs.pop[i].category === '일상'){
+                    rs.daily.push(rs.pop[i]);
+                }else if(rs.pop[i].category === '교육'){
+                    rs.education.push(rs.pop[i]);
                 }
-                callback(err, rs);
-            })
-        })
+            }
+        }catch(e){
+            console.error(e);
+            err = e;
+        }finally{
+            return {err, rs};
+        }
     };
     
     /*
      구독자 미디어 정보 응답
      @param list(array) : 구독자 배열
     */
-    getScriptMedias(list, callback){
-        let in_arr = [];
-        let rs_obj = {};
+    async getScriptMedias(list){
+        let in_arr = [], rs_obj = {}, err;
         for(let i = 0; i < list.length; i++){
             in_arr[i] = list[i].email;
             rs_obj[list[i].email] = [];
         }
-        DAM.select('script_medias', [in_arr], (err, result) => {
-            if(err) {
-                console.error('error is mysql select to set script medias');
-                callback(err);
-                return;
-            }
+        try{
+            const result = await DAM.select('script_medias', [in_arr]);
             rs_obj.all = result;
             for(let i = 0; i < list.length; i++){
                 for(let j = 0; j < result.length; j++){
@@ -389,28 +364,35 @@ class Service {
                     }
                 }
             }
-            callback(err, rs_obj);
-        })
+        }catch(e){
+            console.error(e);
+            err = e;
+        }finally{
+            return {err, rs_obj};
+        }
     };
 
     /*
      좋아요를 표시한 미디어 응답
      @param email(string) : 세션 이메일
     */
-    getMyGoodMedias(email, callback){
-        DAM.select('my_good', [email], (err, result) => {
-            !err || console.error('error is mysql select to get my good medias');
-            callback(err, result);
-        })
+    async getMyGoodMedias(email){
+        try{
+            const result = await  DAM.select('my_good', [email]);
+            return result;
+        }catch(e){
+            console.error(e);
+            return false;
+        }
     };
 
     /*
      키워드에 일치하는 미디어 및 채널 응답
      @param keyword(string) : 검색 키워드
     */
-    searchKeyword(keyword, callback){
+    async searchKeyword(keyword){
         const arr = keyword.split(' ');
-        let keywords = [];
+        let keywords = [], err; 
         for(let i = 0; i < arr.length; i++){
             !arr[i] || keywords.push(arr[i]); 
         }
@@ -420,23 +402,17 @@ class Service {
             channels : null,
             medias : null,
         }
-        DAM.select('keyword_media', [params, params, params], (err, result) => {
-            if(err){
-                console.error('error is mysql select to keyword media');
-                callback(err);
-                return;
-            }
+        try{
+            const result = await DAM.select('keyword_media', [params, params, params]);
             rs.medias = !result.length ? null : sort(result);
-            DAM.select('keyword_channel', [params, params], (err, result) => {
-                if(err){
-                    console.error('error is mysql select to keyword channel');
-                    callback(err);
-                    return;
-                }
-                rs.channels = !result.length ? null : result;
-                callback(err, rs);
-            })
-        })
+            const _result = await DAM.select('keyword_channel', [params, params]);
+            rs.channels = !_result.length ? null : _result;
+        }catch(e){
+            console.error(e);
+            err = e;
+        }finally{
+            return {err, rs};
+        }
     };
 
     /*
@@ -444,20 +420,24 @@ class Service {
      @param num(number) : 미디어 번호
      @param email(string) : Authorization 이메일
     */
-    deleteMeida(num, email, callback){
-        DAM.select('media', [num], (err, result) => {
-            if(err || result.length < 1 || result[0].email !== email){
-                !err || console.error(err);
-                console.log('nonnormal request!')
-                callback(true);
-                return;
+    async deleteMeida(num, email){
+        try{
+            const result = await DAM.select('media', [num]);
+            if(result.length < 1 || result[0].email !== email){
+                throw new Error('nonnormal request!');
             }
-            DAM.delete('media', [num], (err) => {
-                !err || console.error(err);
-                callback(err);
-                return;
-            })
-        })
+            await DAM.delete('media', [num]);
+            const arr = [`media/${form.img}`, `media/${form.video}`];
+            try{
+                practice.deletes(arr);
+            }catch(err){
+                console.error(err);
+            }
+            return true;
+        }catch(e){
+            console.error(e);
+            return false;
+        }
     };
 
     /*
@@ -465,21 +445,18 @@ class Service {
      @param num(number) : 댓글 번호
      @param email(string) : Authorization 이메일
     */
-    deleteComments(num, email, callback){
-        DAM.select('comments', [num], (err, result) => {
-            if(err){
-                console.error(err);
-                callback(err);
-            }else if(result.length > 1 || result[0].email !== email){
-                console.log('nonnormal request!');
-                callback(true);
-            }else{
-                DAM.delete('comments', [num], (err) => {
-                    !err || console.error(err);
-                    callback(err);
-                })
+    async deleteComments(num, email){
+        try{
+            const result = await DAM.select('comments', [num]);
+            if(result.length > 1 || result[0],email !== email){
+                throw new Error('nonnormal request!');
             }
-        })
+            await DAM.delete('comments', [num]);
+            return true;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
     };
 
     /*
@@ -488,24 +465,27 @@ class Service {
      @param files(obj) : 이미지, 비디오 정보 객체
      @param email(string) : 세션 이메일
     */
-    mediaUpload(form, files, email, callback){
+    async mediaUpload(form, files, email){
         form = JSON.parse(form);
         form.email = email,
         form.img = files.img[0].key,
         form.video = files.video[0].key,
         form.date = new Date();
         const upload_keys = [];
-        DAM.insert('media', form, (err) => {
-            if(err){
+        try{
+            await DAM.insert('media', form);
+            return true;
+        }catch(err){
+            console.error(err);
+            upload_keys[0]({Key : `media/${form.img}`});
+            upload_keys[1]({Key : `media/${form.video}`});
+            try{
+                await practice.deletes(upload_keys);
+            }catch(err){
                 console.error(err);
-                upload_keys[0]({Key : `media/${form.img}`});
-                upload_keys[1]({Key : `media/${form.video}`});
-                practice.deletes(upload_keys, (err) => {
-                    !err || console.error(err);
-                })
             }
-            callback(err);
-        })
+            return false;
+        }
     };
 
     /*
@@ -514,44 +494,47 @@ class Service {
      @param files(obj) : 이미지, 비디오 정보 객체
      @param email(string) : Authorization 이메일
     */
-    mediaUpdate(form, files, num, email, callback){
-        DAM.select('media', [num], (err, result) => {
-            if(err || result.length < 1 || result[0].email !== email){
-                !err || console.error(err);
-                console.log('nonnormal request!');
-                callback(err);
-                return;
+    async mediaUpdate(form, files, num, email){
+        let _delete = null;
+        const delete_keys = [];
+        const upload_keys = [];
+        try{
+            const result = await DAM.select('media', [num]);
+            if(result.length < 1 || result[0].email !== email){
+                throw new Error({err_code : 0 , message : 'nonnormal request!'});
             }
             const old_media = result[0];
-            const delete_keys = [];
-            const upload_keys = [];
-
             form = JSON.parse(form);
             if(!!files.img){
+                form.img = files.img[0].key;
                 delete_keys.push({Key : `media/${old_media.img}`});
                 upload_keys.push({Key : `media/${files.img[0].key}`});
             }
             if(!!files.video){
+                form.video = files.video[0].key;
                 delete_keys.push({Key : `media/${old_media.video}`});
                 upload_keys.push({Key : `media/${files.video[0].key}`});
             }
-            
-            DAM.update('media', [form, old_media.num], (err) => {
-                let _delete = null;
-                if(err){
+            try{
+                await DAM.update('media', [form, old_media.num]);
+                _delete = delete_keys.length > 0 ? delete_keys : null;
+            }catch(err){
+                console.error(err);
+                _delete = upload_keys;
+            }
+            return true;
+        }catch(err){
+            console.error(err);
+            return false;
+        }finally{
+            if(!!_delete){
+                try{
+                    practice.deletes(_delete);
+                }catch(err){
                     console.error(err);
-                    _delete = upload_keys;
-                }else if(delete_keys.length > 0){
-                    _delete = delete_keys;
                 }
-                callback(err);
-                if(!!_delete){
-                    practice.deletes(_delete, (err) => {
-                        !err || console.error(err);
-                    })
-                }
-            });
-        })
+            }
+        }
     };
 };
 

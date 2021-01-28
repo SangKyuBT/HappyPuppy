@@ -11,43 +11,43 @@ class Service{
      S3에 있는 이미지 base64로 인코딩하여 응답
      @param poster(string) : S3 키
     */
-    s3Base64(poster, callback){
-        practice.read(`abandoned/${poster}`, (err, data) => {
-            if(err){
-                console.error(err);
-                callback(err);
-                return;
-            }
-            var base64 =  `data:image/jpg;base64,${data.Body.toString('base64')}`;
-            callback(err, base64);
-        })
+    async s3Base64(poster){
+        try{
+            const data = (await practice.read(`abandoned/${poster}`)).Body;
+            const base64 = `data:image/jpg;base64,${data.toString('base64')}`;
+            return base64;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
     };
     
     /*
      임시 폴더에 있는 이미지 base64 인코딩하여 응답
      @param path(string) : 임시 디렉토리내의 이미지 위치
     */
-    base64(path, callback){
-        imgConvert.base64(path, (err, imgData) => {
-            if(err){
-                console.error('retturn buffer base64 errror');
-            }
+    base64(path){
+        try{
+            return imgConvert.base64Sync(path);
+        }catch(err){
+            console.error(err);
+            return false;
+        }finally{
             fs.unlinkSync(path);
-            callback(err, imgData);
-        })
+        }
     };
 
     /*
      S3 이미지 응답
      @param key : S3 키
     */
-    getImg(key, callback){
-        practice.read(key, (err, data) => {
-            if(err){
-                console.error(`getImg s3 key:${key} error`);
-            }
-            callback(err, data);
-        })
+    async getImg(key){
+        try{
+            return (await practice.read(key)).Body;
+        }catch(err){
+            console.error(err);
+            return false;
+        }
     };
 };
 

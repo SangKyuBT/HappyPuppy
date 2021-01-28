@@ -11,7 +11,7 @@ const router = express.Router();
 /*
  현재 세션의 로그인 여부 응답
 */
-router.get('/', function(req, res) {
+router.get('/', (req, res) => {
     res.status(200).json({code:1, message:'success', login_code:req.session.isLogined});
 });
 
@@ -20,21 +20,15 @@ router.get('/', function(req, res) {
 */
 router.get('/my_email', (req, res) => {
     const email = getEmail(req.session)
-    res.status(200).json({code:1, email : email});
+    res.status(200).json({code:1, email});
 })
 
 /*
  로그아웃 요청
 */
-router.get('/logout', function(req, res){
-    loginOut(req.sessionID, (err) => {
-        if(err){
-            console.log(err);
-            res.status(200).send('failed');
-            return
-        }
-        res.status(200).send("success");
-    })
+router.get('/logout', async (req, res) => {
+    await loginOut(req.sessionID);
+    res.status(200).send("success");
 })
 
 module.exports = router;

@@ -12,13 +12,13 @@ class Service{
      @param place(string) : 장소
      @param num(number) : 전단지 번호
     */
-    select(place, num, callback){
-        DAM.select(place, num, (err, result) => {
-            if(err){
-                console.error('mysql abandoned select error');
-            }
-            callback(err, result);
-        })
+    async select (place, num){
+        try{
+            const result = await DAM.select(place, num);
+            return result;
+        }catch(err){
+            return false;
+        }
     };
 
     /*
@@ -27,15 +27,15 @@ class Service{
      @param files(obj) : 업로드된 이미지 정보 객체
      @param email(string) : 세션 이메일
     */
-    insert(form, files, email, callback){
+    async insert(form, files, email){
         form = JSON.parse(form);
         const ab_info = this.createInfo(form, files, email);
-        DAM.insert(ab_info, (err) => {
-            if(err){
-                console.error('abandoned mysql insert error');
-            }
-            callback(err);
-        })
+        try{
+            const result = await DAM.insert(ab_info);
+            return result;
+        }catch(err){
+            return false;
+        }
     };
     
     /*
@@ -44,7 +44,7 @@ class Service{
      @param files(obj) : 업로드된 파일 정보 객체
      @email email(string) : Authorization 이메일
     */
-    update(form, files, email, callback){
+    async update(form, files, email){
         form = JSON.parse(form);
         const update = form.update;
         let {main_key, sb_keys, poster_key} = update;
@@ -57,24 +57,26 @@ class Service{
                 sb_keys[f] = files[f][0].key;
             })
             this.deleteFiles(main_key, poster_key, sb_keys);
-            callback(true);
-            return;
+            return false;
         }
 
         delete form.update;
         const ab_info = this.createInfo(form, files, false);
-        DAM.update(ab_info, update.num, (err) => {
-            if(err){
-                console.error('error is abandoned mysql update');
-                main_key = files.main[0].key
-                poster_key = files.poster[0].key
-                Object.keys(sb_keys).forEach(f => {
-                    sb_keys[f] = files[f][0].key;
-                })
-            }
+
+        try{
+            const result = await DAM.update(ab_info, update.num);
             this.deleteFiles(main_key, poster_key, sb_keys);
-            callback(err);
-        })
+            return result;
+        }catch(err){
+            main_key = files.main[0].key
+            poster_key = files.poster[0].key
+            Object.keys(sb_keys).forEach(f => {
+                sb_keys[f] = files[f][0].key;
+            })
+            return false;
+        }finally{
+            this.deleteFiles(main_key, poster_key, sb_keys);
+        }
     };
     
     /*
@@ -82,18 +84,16 @@ class Service{
      @param body(obj) : 삭제할 정보 객체
      @param email(string) : Authorization 이메일
     */
-    delete(body, email, callback){
+    async delete(body, email){
         var {main_key, sb_keys, num, poster_key} = body;
-        DAM.delete(num, email, (err) => {
-            if(err){
-                console.error(`error is delete ${body.num}`);
-            }else{
-                sb_keys = JSON.parse(sb_keys);
-                this.deleteFiles(main_key, poster_key, sb_keys);
-            }
-            callback(err);
-
-        })
+        try{
+            await DAM.delete(num, email);
+            sb_keys = JSON.parse(sb_keys);
+            this.deleteFiles(main_key, poster_key, sb_keys);
+            return true;
+        }catch(err){
+            return false;
+        }
     };
     /*
      insert, update 과정에 필요한 정보 리턴
@@ -129,20 +129,20 @@ class Service{
      @param sb_keys(obj) : 삭제할 서브이미지들 객체
      코드 중복으로 인한 불리
     */
-    deleteFiles(main_key, poster_key, sb_keys){
+    async deleteFiles(main_key, poster_key, sb_keys){
         const key = (key) => {
             return {Key : `abandoned/${key}`}
         }
-
         const d_arr = [];
         Object.keys(sb_keys).forEach(f => {
             d_arr.push(key(sb_keys[f]));
         })
         d_arr.push(key(main_key), key(poster_key));
-
-        practice.deletes(d_arr, (err)=>{
-            !err|| console.error(err);
-        });
+        try{
+            practice.deletes(d_arr);
+        }catch(err){
+            console.log(err);
+        }
     };
 };
 

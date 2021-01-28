@@ -14,6 +14,7 @@
                     "media/update_media",
                     "media/insert_video",
                     "media/input_comment",
+                    "media/my_script",
                     "media/my_media_think",
                     "media/my_comment_think",
                     "media/get_script_medias",

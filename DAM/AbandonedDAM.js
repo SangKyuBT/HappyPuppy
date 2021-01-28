@@ -4,27 +4,19 @@
 import { select, insert, update, _delete } from "./sqlSelector/abandoned"; //sql 리턴
 import { connection } from "./"; //커넥션 풀
 
-class DAM {
-    insert(ab_info, callback){
-        connection(insert, ab_info, (err) => {
-            callback(err);
-        })
-    };
-    update(ab_info, num, callback){
-        connection(update,[ab_info, num], (err, result) => {
-            callback(err, result);
-        })
-    };
-    select(place, num, callback){
-        connection(select(place, num), (err, result) => {
-            callback(err, result);
-        })
-    };
-    delete(num, email, callback){
-        connection(_delete, [num, email], (err) => {
-            callback(err);
-        })
-    };
-};
+const DAM = {
+    select : async (place, num) => {
+        return await connection(select(place, num));
+    },
+    insert : async(ab_info) => {
+        return await connection(insert, ab_info, true);
+    },
+    update : async (...args) => {
+        return await connection(update, args, true);
+    },
+    delete : async (...args) => {
+        return await connection(_delete, args, true);
+    }
+}
 
-module.exports = new DAM();
+module.exports = DAM;

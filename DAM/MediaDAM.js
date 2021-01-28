@@ -5,25 +5,18 @@ import { select, insert, update, _delete } from "./sqlSelector/media"; //sql 리
 import { connection } from "./"; //커넥션 풀
 
 const DAM = {
-    insert : (qk, values, callback) => {
-        connection(insert[qk], values, (err) => {
-            callback(err);
-        })
+    insert : async (qk, values) => {
+        return await connection(insert[qk], values);
     },
-    update : (qk, params, callback) => {
-        connection(update[qk], params, (err) => {
-            callback(err);
-        })
+    update : async (qk, params) => {
+        return await connection(update[qk], params, true);
     },
-    select : (qk, params, callback) => {
-        connection(select[qk], params, (err, result) => {
-            callback(err, result);
-        })
+    select : async (qk, params) => {
+        return await connection(select[qk], params, true);
+
     },
-    delete : (qk, params, callback) => {
-        connection(_delete[qk], params, (err) => {
-            callback(err);
-        })
+    delete : async (qk, params) => {
+        return await connection(_delete[qk], params, true);
     },
 }
 

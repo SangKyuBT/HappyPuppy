@@ -12,10 +12,9 @@ const router = express.Router();
  S3에 저장되어 있는 이미지를 base64인코딩 요청
  @param poster(string) : 인코딩 요청 키
 */
-router.get('/rpb/:poster', (req, res) => {
-  service.s3Base64(req.params.poster, (err, result) => {
-    res.status(200).json({message : !err ? 1 : 0, result : result});
-  })
+router.get('/rpb/:poster', async (req, res) => {
+  const result = await service.s3Base64(req.params.poster);
+  res.status(200).json({message : result ? 1 : 0, result});
 });
 
 /*
@@ -26,14 +25,11 @@ router.post('/return_buffer', (req, res) => {
   rsUpload(req, res, (err) => {
     if(err){
       res.status(200).json({code:0, mesaage:'failed'});
-      return
+      return     
     }
-    service.base64(req.file.path, (err, imgData) => {
-      if(err){
-        console.log(err);
-      }
-      res.status(200).json({code:1, imgData:imgData});
-    })
+    const imgData = service.base64(req.file.path); 
+    res.status(200).json({code : !imgData ? 0 : 1, imgData});
+    
   })
 });
 
@@ -42,19 +38,12 @@ router.post('/return_buffer', (req, res) => {
  @param name(string) : S3 버킷 이름
  @param key(string) : S3 키
 */
-router.get('/get_img/:name/:key', (req, res) => {
-  let result = '';
-  service.getImg(`${req.params.name}/${req.params.key}`, (err, data) => {
-    if(err){
-      console.log(err);
-      result = 'image is not defined';
-    }else{
-      result = data.Body;
-    }
-    res.writeHead(200, { "Context-Type": "image/jpg" });
-    res.write(result); 
-    res.end(); 
-  })
+router.get('/get_img/:name/:key', async (req, res) => {
+  const data = await service.getImg(`${req.params.name}/${req.params.key}`);
+  res.writeHead(200, { "Context-Type": "image/jpg" });
+  res.write(data ? data : 'image is not defined'); 
+  res.end(); 
+
 });
 
 /*
@@ -62,19 +51,11 @@ router.get('/get_img/:name/:key', (req, res) => {
  @param name1, name2(string) : S3 버킷 이름
  @param key(string) : S3 키
 */
-router.get('/get_thumbnail/:name1/:name2/:key', (req, res) => {
-  let result = '';
-  service.getImg(`${req.params.name1}/${req.params.name2}/${req.params.key}`, (err, data) => {
-    if(err){
-      console.log(err);
-      result = 'image is not defined';
-    }else{
-      result = data.Body;
-    }
-    res.writeHead(200, { "Context-Type": "image/jpg" });
-    res.write(result); 
-    res.end(); 
-  })
+router.get('/get_thumbnail/:name1/:name2/:key', async (req, res) => {
+  const data = await service.getImg(`${req.params.name1}/${req.params.name2}/${req.params.key}`);
+  res.writeHead(200, { "Context-Type": "image/jpg" });
+  res.write(data ? data : 'image is not defined'); 
+  res.end(); 
 });
 
 

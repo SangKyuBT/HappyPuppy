@@ -20,51 +20,60 @@ const practice = {
     },
 
     //업로드
-    upload : (key, file, callback) => {
+    upload : async (key, file) => {
         const params = {
             Bucket : bucket.base,
             Key : key,
             Body : file
         }
-        s3.upload(params, (err) => {
-            callback(err);
-        })
+        try{
+            return await s3.upload(params).promise();
+        }catch(err){
+            throw err;
+        }
+
     },
 
     //읽기
-    read : (key, callback) => {
+    read : async (key) => {
         const params = {
             Bucket : bucket.base,
             Key : key
         }
-        s3.getObject(params, (err, data) => {
-            callback(err, data);
-        })
+        try{
+            return await s3.getObject(params).promise();
+        }catch(err){
+            throw err;
+        }
     },
 
     //삭제
-    delete : (key, callback) => {
+    delete : async (key) => {
         const params = {
             Bucket : bucket.base,
             Key : key
         }
-        s3.deleteObject(params, (err) => {
-            callback(err);
-        })
+        try{
+            return await s3.deleteObject(params).promise();
+        }catch(err){
+            throw err;
+        }
     },
 
     //여러개 한번에 삭제
-    deletes :(keys, callback) => {
-        var params = {
+    deletes : async (keys) => {
+        const params = {
             Bucket: bucket.base, 
             Delete: {
              Objects: keys, 
              Quiet: false
             }
         };
-        s3.deleteObjects(params, (err) => {
-            callback(err);
-        })
+        try{
+            return await s3.deleteObjects(params).promise();
+        }catch(err){
+            throw err;
+        }
     },
 
     //스트림 리턴
@@ -77,14 +86,16 @@ const practice = {
     },
 
     //파일 헤드 정보
-    headRead : (key, callback) => {
+    headRead : async (key) => {
         const params = {
             Bucket : bucket.video_bucket,
             Key : key
         }
-        s3.headObject(params, (err, data) => {
-            callback(err, data);
-        })
+        try{
+            return await s3.headObject(params).promise();
+        }catch(err){
+            throw err;
+        }
     },
 }
 

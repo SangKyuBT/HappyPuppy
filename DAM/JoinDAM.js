@@ -5,22 +5,15 @@ import { select, insert, _delete } from "./sqlSelector/join"; //sql 리턴
 import { connection } from "./"; //커넥션 풀
 
 const DAM = {
-    select : (qk, params, callback) => {
-        connection(select[qk], params, (err, result) => {
-            callback(err, result);
-        })
+    select : async (qk, params) => {
+        return await connection(select[qk], params);
     },
-    insert : (qk, values, callback) => {
-        connection(insert[qk], values, (err) => {
-            callback(err);
-        })
+    insert : async (qk, values) => {
+        return await connection(insert[qk], values, true);
     },
-    delete: (qk, params, callback) => {
-        connection(_delete[qk], params, (err) => {
-            callback(err);
-        })
+    delete: async (qk, params) => {
+        return await connection(_delete[qk], params, true);
     }
-
 }
 
 module.exports = DAM;

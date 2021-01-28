@@ -11,30 +11,28 @@ const router = express.Router();
  인증 메일 전송 요청
  @param email {string} 요청 보낼 이메일
 */
-router.post ('/certify-number', (req, res) => {
-    service.sendMail(req.body.email, (err, result) => {
-        res.status(200).json({code: err ? 0 : 1, result:result});
-    })
+router.post ('/certify-number', async (req, res) => {
+    const result = await service.sendMail(req.body.email);
+    res.status(200).json({code : result ? 1 : 0, result});
 })
 
 /*
  이메일 중복 체크 요청
  @param email {string} 확인할 이메일
 */
-router.get('/duplicate_email/:email', (req, res) => {
-    service.duplicate(req.params.email, (err, result) => {
-        res.status(200).json({code: err ? 0 : 1, result : result});
-    })
+router.get('/duplicate_email/:email', async (req, res) => {
+    const result = await service.duplicate(req.params.email);
+    res.status(200).json({code : result ? 1 : 0, result});
 })
 
 /*
  회원가입 요청
  @param member_info {obj} 회원 정보 객체
 */
-router.post('/input_member', (req, res) => {
-    service.addMember(req.body, (err, result) => {
-        res.status(200).json({code : err ? 0 : 1 , result:result});
-    })
+router.post('/input_member', async (req, res) => {
+    const code = await service.addMember(req.body);
+    res.status(200).json({code});
+
 })
 
 module.exports = router;

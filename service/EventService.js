@@ -9,6 +9,24 @@ import DAM from "../DAM/EventDAM"; //데이터베이스 엑세스 모듈
 
 class Service {
     /*
+     이미지 추출, 결과 리턴
+     @param path(string) : 추출 대상 이미지 경로
+     @param position(obj) : 추출 좌표 정보
+     @param path_sharp : 추출 결과 저장 경로
+    */
+    imgSharp(path, position, path_sharp){
+        return new Promise((resolve, reject) => {
+            sharp(path).extract(position).toFile(path_sharp, (err, info) => {
+                if(err){
+                    console.error(err);
+                    reject(false);
+                }else{
+                    resolve(true);
+                }
+            })
+        })
+    }
+    /*
      이미지 추출에 대한 좌표값을 확인하고 추출에 필요한 정보를 리턴
      @param filename(string) : 파일 이름
      @param destination(string) : 추출 이미지 저장 경로
@@ -42,52 +60,38 @@ class Service {
      @param body(obj) : 행사 정보 객체, 추출될 좌표 값 객체
      @param email(string) : 세션 이메일
     */
-    insert(file, body, email, callback){
+    async insert(file, body, email){
         const p = this.createShapParams(file.filename, file.destination, body);
         if(!p){
-            callback(`sharp position error : ${position}`);
-            return;
+            console.log(`sharp position error : ${position}`);
+            return falsel
         }
 
         const {position, form, name_sharp, path_sharp} = p;
-        sharp(file.path).extract(position).toFile(path_sharp, (err, info) => {
-            if(err){
-                console.error('event service insert error');
-                callback(err);
-                return
-            }
-            const key = `event/${name_sharp}`,
-            fs_read = fs.readFileSync(path_sharp);
+        const sharp_rs = await this.imgSharp(file.path, position, path_sharp);
+        if(!sharp_rs){
+            return false;
+        }
 
-            practice.upload(key, fs_read, (err) => {
-                fs.unlinkSync(path_sharp); 
-                if(err){                 
-                    console.error('event sharp image upload error');
-                    fs.unlinkSync(file.path);
-                    callback(err);
-                    return
-                }
+        let key = `event/${name_sharp}`;
+        try{
+            await practice.upload(key, fs.readFileSync(path_sharp));
+            form.email = email;
+            form.ev_img = name_sharp;
+            key = `event/${file.filename}`;
+            // fs_read = fs.readFileSync(file.path);
+            await practice.upload(key, fs.readFileSync(file.path));
+            const result = await DAM.insert(form);
+            return result;
+        }catch(err){
+            console.log(err);
+            return false;
+        }finally{
+            fs.unlinkSync(file.path);
+            fs.unlinkSync(path_sharp);
+        }
 
-                form.email = email;
-                form.ev_img = name_sharp;
-                DAM.insert(form, (err) => {
-                    if(err){
-                        console.error('mysql event insert error');
-                        fs.unlinkSync(file.path);
-                        callback(err);
-                        return
-                    }
-                    
-                    const key = `event/${file.filename}`,
-                    fs_read = fs.readFileSync(file.path);
-                    practice.upload(key, fs_read, (err) => {
-                        fs.unlinkSync(file.path);
-                        callback(err);
-                        return
-                    })
-                })
-            })
-        })
+
     };
     
     /*
@@ -96,63 +100,42 @@ class Service {
      @param body(obj) : 행사 정보 객체, 추출될 좌표 값 객체
      @param email(string) : Authorization 이메일
     */
-    update(file, body, email, callback){
+    async update(file, body, email){
         const p = this.createShapParams(file.filename, file.destination, body);
         if(!p){
-            callback(`sharp position error : ${position}`);
-            return;
+            console.log(`sharp position error : ${position}`);
+            return false;
         }
 
         const {position, form, name_sharp, path_sharp} = p;
-        sharp(file.path).extract(position).toFile(path_sharp, (err, info) => {
-            if(err){
-                console.error('event service insert error');
-                callback(err);
-                return
+        const sharp_rs = await this.imgSharp(file.path, position, path_sharp);
+        if(!sharp_rs){
+            return false;
+        }
+
+        let key = `event/${name_sharp}`;
+        try{
+            await practice.upload(key, fs.readFileSync(path_sharp));
+            form.ev_img = name_sharp;
+            const update = JSON.parse(body.update);
+            key = `event/${file.filename}`;
+            // fs_read = fs.readFileSync(file.path);
+            await practice.upload(key, fs.readFileSync(file.path));
+            const delete_keys = [`event/${update.key}`, `event/${update.key.split('sharp')[1]}`];
+            const result = await DAM.update(form, update.num, email);
+            try{
+                practice.deletes(delete_keys);
+            }catch(err){
+                console.log(`error is s3 deletes to ${delete_keys}`);
             }
-
-            const key = `event/${name_sharp}`,
-            fs_read = fs.readFileSync(path_sharp);
-            practice.upload(key, fs_read, (err) => {
-                fs.unlinkSync(path_sharp); 
-                if(err){                   
-                    console.error('event sharp image upload error');
-                    fs.unlinkSync(file.path);
-                    callback(err);
-                    return
-                }
-
-                form.ev_img = name_sharp;
-                const update = JSON.parse(body.update);
-                DAM.update(form, update.num, email,  (err) => {
-                    if(err){
-                        console.error('mysql event insert error');
-                        fs.unlinkSync(file.path);
-                        callback(err);
-                        return
-                    }
-
-                    const key = `event/${file.filename}`,
-                    fs_read = fs.readFileSync(file.path);
-                    practice.upload(key, fs_read, (err) => {
-                        fs.unlinkSync(file.path);
-                        callback(err);
-                        return
-                    })
-
-                    const delete_keys = [`event/${update.key}`, `event/${update.key.split('sharp')[1]}`];
-                    for(let i of delete_keys){
-                        practice.delete(i, (err) => {
-                            if(err){
-                                console.error(`${i} delete failed`);
-                            }else{
-                                console.log(`${i} delete success`);
-                            }
-                        })
-                    }
-                })
-            })
-        })
+            return result;
+        }catch(err){
+            console.log(err);
+            return false;
+        }finally{
+            fs.unlinkSync(file.path);
+            fs.unlinkSync(path_sharp);
+        }
 
     };
 
@@ -161,28 +144,26 @@ class Service {
      @param start(string) : 시작 날짜
      @param end(string) : 끝 날짜
     */
-    selectCalendar(start, end, callback){
-        DAM.select(start, end, (err, result) => {
-            if(err){
-                console.error('mysql event calendar select error');
-            }
-            callback(err, result);
-        })
+    async selectCalendar(start, end){
+        try{
+            return await DAM.select(start, end);
+        }catch(err){
+            console.log(err);
+            return false;
+        }
     };
 
     /*
      start 이후의 행사 정보 요청
      @param start(string) : 시작 날짜
     */
-    selectCarouesl(start, callback){
-        DAM.select(start, null, (err, result) => {
-            if(err){
-                console.error('mysql event carouesl error');
-                callback(err, result);
-                return;
-            }
-            callback(err, result);
-        })
+    async selectCarouesl(start){
+        try{
+            return await DAM.select(start);
+        }catch(err){
+            console.log(err);
+            return false;
+        }
     };
 
     /*
@@ -190,13 +171,13 @@ class Service {
      @param num(number) : 행사 번호
      @param email(string) : Authorization 이메일
     */
-    delete(num, email, callback){
-        DAM.delete(num, email, (err, reslut) => {
-            if(err){
-                console.error('mysql event delete error')
-            }
-            callback(err, reslut);
-        })
+    async delete(num, email){
+        try{
+            return await DAM.delete(num, email);
+        }catch(err){
+            console.log(err);
+            return false;
+        }
     };
 };
 

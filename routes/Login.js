@@ -11,12 +11,11 @@ const router = express.Router();
 /*
  로그인 요청
 */
-router.post('/', (req, res) => {
-    service.loginService(req.body, (err, result, token) => {
-        if(err || !result){
-            res.status(200).send({message : 0});
-            return;
-        }
+router.post('/', async (req, res) => {
+    const token = await service.loginService(req.body);
+    if(!token){
+        res.status(200).send({message : 0});
+    }else{
         req.session.cookie.expires = new Date(Date.now() + haur);
         req.session.cookie.maxAge = haur; 
         req.session.tokens = token;
@@ -24,7 +23,7 @@ router.post('/', (req, res) => {
         req.session.save(function(){
             res.status(200).send({message : 1})
         })
-    })
+    }
 })
 
 /*
@@ -32,9 +31,8 @@ router.post('/', (req, res) => {
  @param p(string) : 네이버 로그인 요청시에 view route 위치
 */
 router.post('/naver', (req, res) => {
-    service.naverRedirect(req.body.p, (result) => {
-        res.status(200).json({result: result});
-    })
+    const result = service.naverLogin(req.body.p);
+    res.status(200).json({result});
 })
 
 /*

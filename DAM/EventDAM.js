@@ -5,28 +5,17 @@ import { select, insert, update, _delete } from "./sqlSelector/event"; //sql 리
 import { connection } from "./"; //커넥션 풀
 
 const DAM = {
-    insert : (form, callback) => {
-        connection(insert, form, (err, result) => {
-            callback(err);
-        })
+    insert : async (form) => {
+        return await connection(insert, form, true);
     },
-    select : (start, end, callback) => {
-        connection(select(start, end), (err, result) => {
-            callback(err, result);
-        })
+    select : async (start, end) => {
+        return await connection(select(start, end));
     },
-    update : (form, num, email, callback) => {
-        connection(update, [form, num, email], (err) => {
-            callback(err);
-        })
+    update : async (...args) => {
+        return await connection(update, args, true);
     },
-    delete : (num, email, callback) => {
-        connection(_delete, [num, email], (err, result) => {
-            callback(err, result);
-        })
-    },
-    classTest(name){
-        console.log(name);
+    delete : async (...args) => {
+        return await connection(_delete, args, true);
     }
 }
 

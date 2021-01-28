@@ -12,108 +12,80 @@ class Service{
      메일전송 모듈로 인증번호 메일 전송
      @param email(string) : 요청 이메일
     */
-    sendMail(email, callback){
-        DAM.select('member', [email], (err, result) => {
-            if(err || result[0].count > 0){
-                !err || console.error(err);
-                callback(err, false);
-                return;
+    async sendMail(email){
+        try{    
+            const check_member = await DAM.select('member', [email]);
+            if(check_member[0].count > 0){
+                return false;
             }
 
             const join_wait = {
                 certify_number : createSecret.createCertifyNumber(5, 5),
                 wait_email : email,       
-            }  
+            };  
             const mailOptions = {
                 from : from,
                 to : email,
                 subject : '해피퍼피 이메일 인증번호입니다.',
                 text : "인증번호 : " + join_wait.certify_number
-            }
-
+            };
             const key = 'join_wait';
-            DAM.insert(key, join_wait, (err) => {
-                if(err){
-                    console.error(err);
-                    callback(err);
-                    return
-                }
 
-                transporter.sendMail(mailOptions, function(error, info){
-                    !error || console.error(error);
-                    callback(error, true);
-                })
+            await transporter.sendMail(mailOptions);
+            await DAM.insert(key, join_wait);
 
-                setTimeout(() => {
-                    DAM.delete(key, [email], (err) =>{
-                        !err || console.error(err);
-                    })
-                }, delete_time)
-            })
-        })
+            setTimeout(() => {
+                DAM.delete(key, [email]);
+            }, delete_time);
+
+            return true;
+            
+        }catch(err){
+            console.error(err);
+            return false;
+        }
+        
     };
 
     /* 
      DB에서 해당 이메일이 존재하는지 조회
      @param email(string) : 확인 이메일
     */
-    duplicate(email, callback){
-        DAM.select('duplicate_email', [email], (err, result) => {
-            !err || console.error(err);
-            callback(err, !result ? null : result.length);
-        })
+    async duplicate(email){
+        try{
+            return await DAM.select('duplicate_email', [email]);
+        }catch(err){
+            cosnole.log(err);
+            return false;
+        }
+
     };
     
     /*
      회원 가입, 인증번호 확인 후 비밀번호 암호화, DB insert
-     param member_info(obj) : 회원 정보 객체
+     @param member_info(obj) : 회원 정보 객체
     */
-    addMember(member_info, callback){
-        DAM.select('join_wait', [member_info.certify_number, member_info.email], (err, result) => {
-            if(err || !result.length){
-                callback(err, true);
-                return;
+    async addMember(member_info){
+        let member_insert = 0;
+        try{
+            const join_wait = await DAM.select('join_wait', [member_info.certify_number, member_info.email]);
+            if(!join_wait.length){
+                throw new Error('join wait not find');
             }
             member_info.password_data = JSON.stringify(createSecret.encryption(member_info.password));
             delete member_info.password;
             delete member_info.certify_number;
             
-            DAM.insert('member', member_info, (err) => {
-                if(err){
-                    console.error(err);
-                    callback(err, false);
-                    return;
-                }
-                DAM.select('member_profile', [member_info.email], (err, result ) => {
-                    if(err){
-                        console.error(err);
-                        DAM.delete('member', [member_info.email], (err) => {
-                            !err || console.error(err);
-                            callback(err, false);
-                        })
-                        return;
-                    }
-
-                    DAM.delete('join_wait', [member_info.email], (err) => {
-                        !err || console.error(err);
-                    })
-
-                    if(result[0].count > 0){
-                        callback(err, false);
-                    }else{
-                        DAM.insert("member_profile", member_info.email, (err) => {
-                            if(err){
-                                console.error(err);
-                                DAM.delete('member', [member_info.email], (err) => {
-                                    !err || console.error(err);
-                                })
-                            }
-                            callback(err, false);
-                        })
-                    }
-                });
-            })
-        });
+            const member_profile = await DAM.select('member_profile', [member_info.email]);
+            member_profile[0].count || await DAM.insert("member_profile", member_info.email);
+            await DAM.insert('member', member_info);
+            member_insert = 1;
+        }catch(err){
+            console.log(err);
+        }finally{
+            !member_insert || DAM.delete('join_wait', [member_info.email]);
+            return member_insert;
+        }
     };
 }
 

@@ -13,71 +13,49 @@ const router = express.Router();
  @param body(obj) : 회원 프로필 정보 객체
  @param file(obj) : 회원 프로필 이미지
 */
-router.post('/profile', (req, res) => {
-    rsUpload(req, res, (err) => {
+router.post('/profile', async (req, res) => {
+    rsUpload(req, res, async (err) => {
         if(err){
             console.error('error is profile rsUpload');
             res.status(200).json({code:0, message:'failed'});
             return
         }
-        
         const email = getEmail(req.session);
-        service.updateImage(req.file, req.body, email, (err, filename) => {
-            if(err){
-                console.log(err);
-                res.status(200).json({code:0, message:'failed'});
-                return
-            }
-          res.status(200).json({code:1, message:'success', item : filename});
-        })
+        const result = await service.updateImage(req.file, req.body, email);
+        const rs_js = !result ? {code:0, message:'failed'} : {code:1, message:'success', item : result};
+        res.status(200).json(rs_js);
     })
 })
 
 /*
  회원에 대한 대략적인 정보 요청
 */
-router.get('/get_info', (req, res) => {
+router.get('/get_info', async (req, res) => {
     const email = getEmail(req.session);
-    service.getInfo(email, (err, result) => {
-        if(err){
-            console.log(err);
-            res.status(200).json({code:0});
-            return;
-        }
-        res.status(200).json({code:1, item:result});
-    })
+    const item = await service.getInfo(email);
+    res.status(200).json({code : item ? 1 : 0, item});
+    
 });
 
 /*
  회원 채널에 대한 대략적인 정보 요청
 */
-router.get('/get_channel_info', (req, res) => {
+router.get('/get_channel_info', async (req, res) => {
     const email = getEmail(req.session);
-    service.getMediaInfo(email, (err, result) => {
-        if(err){
-            console.log(err);
-            res.status(200).json({code:0});
-            return;
-        }
-        res.status(200).json({code:1, result:result});
-    })
+    const result = await service.getMediaInfo(email);
+    res.status(200).json({code : result ? 1 : 0, result});
 });
 
 /*
  회원 닉네임 변경 요청
  @param nickname(string) : 닉네임
 */
-router.get('/nickname/:nickname', (req, res) => {
+router.get('/nickname/:nickname', async (req, res) => {
     const nickname = req.params.nickname;
     if(!!nickname && nickname.length <= 15){
         const email = getEmail(req.session);
-        service.updateNickname(nickname, email, (err, code) => {
-            if(err){
-                res.status(200).json({code:0});
-                return;
-            }
-            res.status(200).json({code:code});
-        })
+        const code = await service.updateNickname(nickname, email);
+        res.status(200).json({code});
     }else{
         res.status(200).json({code:0})
     }
@@ -86,70 +64,56 @@ router.get('/nickname/:nickname', (req, res) => {
 /*
  회원 행사 정보 요청
 */
-router.get('/get_events', (req, res) => {
+router.get('/get_events', async (req, res) => {
     const email = getEmail(req.session);
-    service.getMyEvent(email, (err, result) => {
-        if(err){
-            console.log(err);
-            res.status(200).json({code:0});
-            return;
-        }
-        res.status(200).json({code:1, item : result});
-    })
+    const item = await service.getMyEvent(email);
+    res.status(200).json({code : item ? 1 : 0, item})
 })
 
 /*
  회원 실종 반려견 정보 요청
 */
-router.get('/get_abandoned', (req, res) => {
+router.get('/get_abandoned', async (req, res) => {
     const email = getEmail(req.session);
-    service.getMyAbandoned(email, (err, result) => {
-        if(err){
-            console.log(err);
-            res.status(200).json({code:0})
-        }
-        res.status(200).json({code:1, item:result})
-    })
+    const item = await service.getMyAbandoned(email);
+    res.status(200).json({code : item ? 1 : 0, item})
 })
 
 /*
  비밀번호 인증 메일 요청
  @param email(string) : 요청 이메일
 */
-router.post('/certify_number', (req, res) => {
+router.post('/certify_number', async (req, res) => {
     const number = req.session.isLogined;
     if(!!number && number === 2){
         res.status(200).json({code:0});
         return
     }
-    service.sendMail(req.body.email, (err, result) => {
-        res.status(200).json({code: err ? 0 : 1, result:result});
-    })
+    const {code, result} = await service.sendMail(req.body.email);
+    res.status(200).json({code, result})
 })
 
 /*
  비밀번호 변경 요청
  @param body(obj) : 비밀번호 변경 정보 객체
 */
-router.post('/find_pass', (req, res) => {
+router.post('/find_pass', async (req, res) => {
     const number = req.session.isLogined;
     if(!!number && number === 2){
         res.status(200).json({code:0});
         return
     }
-    service.findPass(req.body, (err, result) => {
-        res.status(200).json({code: err ? 0 : 1, result:result});
-    })
+    const result = await service.findPass(req.body);
+    res.status(200).json({code : result ? 1 : 0});
 })
 
 /*
  회원 미디어 정보 요청
 */
-router.get('/my_medias', (req, res) => {
+router.get('/my_medias', async (req, res) => {
     const email = getEmail(req.session);
-    service.getMyMedias(email, (err, result) => {
-        res.status(200).json({code: err ? 0 : 1, result : result});
-    })
+    const {err, rs} = await service.getMyMedias(email);
+    res.status(200).json({code : err ? 0 : 1, result : rs});
 })
 
 module.exports = router;
