@@ -31,6 +31,7 @@ router.post('/', async (req, res) => {
  @param p(string) : 네이버 로그인 요청시에 view route 위치
 */
 router.post('/naver', (req, res) => {
+    console.log('ininin')
     const result = service.naverLogin(req.body.p);
     res.status(200).json({result});
 })

@@ -72,10 +72,7 @@ class Service {
         }else if(path.indexOf('/abandoned') > -1){
             p = '/abandonedDog'
         }
-        
-        const url = naver.hrefURL(p);
-        // callback(url);
-        return url;
+        return naver.hrefURL(p);
     };
 
     /*
