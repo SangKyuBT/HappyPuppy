@@ -48,7 +48,7 @@ router.get('/callback/:path', (req, res) => {
             req.session.tokens = token;
             req.session.isLogined  = 2;
             req.session.save(function(){
-                res.redirect(`/${req.params.path}`);
+                res.redirect(`https://www.happypuppy.link/${req.params.path}`);
             })
         }else{
             res.status(response.statusCode).end();

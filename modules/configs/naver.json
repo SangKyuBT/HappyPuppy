@@ -1,6 +1,6 @@
 {
     "id" : "y2GchClz01E_mwS85HM7",
     "secret" : "RwnYBQwDbW",
-    "redirect_URI" : "http://54.180.93.116/api/naver_login/callback",
+    "redirect_URI" : "https://www.happypuppy.link/api/naver_login/callback",
     "state" : "0a09fCLtCJ"
 }
