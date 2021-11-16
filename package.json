@@ -6,7 +6,7 @@
     "start": "babel-node ./bin/www"
   },
   "dependencies": {
-    "aws-sdk": "^2.757.0",
+    "aws-sdk": "^2.814.0",
     "base64-img": "^1.0.4",
     "cheerio-httpcli": "^0.8.1",
     "cookie-parser": "~1.4.4",
